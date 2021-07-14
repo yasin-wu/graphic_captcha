@@ -7,11 +7,11 @@ import (
 )
 
 type CaptchaVO struct {
-	Token               string   `json:"token"`                //每次验证请求唯一标识
-	CaptchaType         string   `json:"captcha_type"`         //验证码类型:(click_word,block_puzzle)
-	OriginalImageBase64 string   `json:"image_base_64"`        //原生图片base64
-	JigsawImageBase64   string   `json:"jigsaw_image_base_64"` //滑块图片base64
-	Words               []string `json:"words"`                //点选文字
+	Token               string   `json:"token"`                  //每次验证请求唯一标识
+	CaptchaType         string   `json:"captcha_type"`           //验证码类型:(click_word,block_puzzle)
+	OriginalImageBase64 string   `json:"original_image_base_64"` //原生图片base64
+	JigsawImageBase64   string   `json:"jigsaw_image_base_64"`   //滑块图片base64
+	Words               []string `json:"words"`                  //点选文字
 }
 
 type CaptchaConfig struct {
