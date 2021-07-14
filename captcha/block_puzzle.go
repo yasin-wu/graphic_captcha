@@ -212,7 +212,22 @@ func (this *BlockPuzzle) interfereBlock(img *image.RGBA, point image.Point, srcB
 			break
 		}
 	}
-	blockFile, err := os.Open(blockPath + "/" + blockName1)
+	blockFileName1 := blockPath + "/" + blockName1
+	this.doInterfere(blockFileName1, img, point, 1)
+	//干扰2
+	var blockName2 string
+	for {
+		blockName2, _ = randomFileName(blockPath)
+		if blockName2 != srcBlockName && blockName2 != blockName1 {
+			break
+		}
+	}
+	blockFileName2 := blockPath + "/" + blockName2
+	this.doInterfere(blockFileName2, img, point, 2)
+}
+
+func (this *BlockPuzzle) doInterfere(blockFileName string, img *image.RGBA, point image.Point, _type int) {
+	blockFile, err := os.Open(blockFileName)
 	if err != nil {
 		log.Printf("open file error: %v", err)
 		return
@@ -223,12 +238,17 @@ func (this *BlockPuzzle) interfereBlock(img *image.RGBA, point image.Point, srcB
 	jigsawWidth := blockImg.Bounds().Dx()
 	x := point.X
 	position := 0
-	if originalWidth-x-5 > jigsawWidth*2 {
-		//在原扣图右边插入干扰图
-		position = randInt(x+jigsawWidth+5, originalWidth-jigsawWidth)
-	} else {
-		//在原扣图左边插入干扰图
-		position = randInt(100, x-jigsawWidth-5)
+	switch _type {
+	case 1:
+		if originalWidth-x-5 > jigsawWidth*2 {
+			//在原扣图右边插入干扰图
+			position = randInt(x+jigsawWidth+5, originalWidth-jigsawWidth)
+		} else {
+			//在原扣图左边插入干扰图
+			position = randInt(100, x-jigsawWidth-5)
+		}
+	case 2:
+		position = randInt(jigsawWidth, 100-jigsawWidth)
 	}
 	point = blockImg.Bounds().Min.Sub(image.Pt(-position, 0))
 	//处理拼图块中模糊部分
@@ -265,25 +285,6 @@ func (this *BlockPuzzle) interfereBlock(img *image.RGBA, point image.Point, srcB
 			}
 		}
 	}
-
-	//干扰2
-	/*var blockName2 string
-	for {
-		blockName2, _ = randomFileName(blockPath)
-		if blockName2 != srcBlockName && blockName2 != blockName1 {
-			break
-		}
-	}
-	blockFile, err = os.Open(blockPath + "/" + blockName2)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer blockFile.Close()
-	blockImg, _ = png.Decode(blockFile)
-	jigsawWidth = blockImg.Bounds().Dx()
-	position = randInt(jigsawWidth, 100-jigsawWidth)
-	draw.DrawMask(img, img.Bounds(), blockImg, blockImg.Bounds().Min.Sub(image.Pt(position, 0)), nil, image.Point{}, draw.Over)*/
 }
 
 func (this *BlockPuzzle) cropJigsaw(blockImg, oriImg image.Image, point image.Point) *image.RGBA {
