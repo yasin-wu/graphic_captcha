@@ -153,13 +153,15 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	if len(cachedWord) != len(checkedWord) {
 		return nil, errors.New("验证码有误")
 	}
-	isPassed := true
+	success := true
+	msg := "验证通过"
 	fontSize := captchaConf.FontSize
 	for index, word := range cachedWord {
 		if !(((checkedWord)[index].X >= word.X && (checkedWord)[index].X <= word.X+fontSize) &&
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
 			((checkedWord)[index].Text == word.Text)) {
-			isPassed = false
+			msg = "验证失败"
+			success = false
 		}
 	}
 	//验证后将缓存删除，同一个验证码只能用于验证一次
@@ -167,11 +169,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	msg := "验证失败"
-	if isPassed {
-		msg = "验证通过"
-	}
-	return &RespMsg{Success: isPassed, Msg: msg}, nil
+	return &RespMsg{Success: success, Msg: msg}, nil
 }
 
 func (this *ClickWord) randomNoCheck(words []rune) []string {

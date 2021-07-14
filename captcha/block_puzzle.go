@@ -154,10 +154,12 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 
-	isPassed := false
+	success := false
+	msg := "验证失败"
 	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= captchaConf.JigsawThreshold) &&
 		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= captchaConf.JigsawThreshold) {
-		isPassed = true
+		success = true
+		msg = "验证通过"
 	}
 
 	//验证后将缓存删除，同一个验证码只能用于验证一次
@@ -165,11 +167,7 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	msg := "验证失败"
-	if isPassed {
-		msg = "验证通过"
-	}
-	return &RespMsg{Success: isPassed, Msg: msg}, nil
+	return &RespMsg{Success: success, Msg: msg}, nil
 }
 
 func (this *BlockPuzzle) newImage(dir string) (*Image, error) {
