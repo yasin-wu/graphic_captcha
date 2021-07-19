@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	mredis "github.com/gomodule/redigo/redis"
 	"github.com/yasin-wu/captcha/redis"
 
 	"github.com/golang/freetype"
@@ -97,13 +96,8 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 
 	//saveImage("/Users/yasin/tmp.png", "png", img)
 
-	//校验数据base64后存入Redis
-	allDotsBuff, err := json.Marshal(allDots)
-	if err != nil {
-		return nil, errors.New("json marshal error:" + err.Error())
-	}
-	data64 := base64.StdEncoding.EncodeToString(allDotsBuff)
-	err = SetRedis(token, data64, this.expireTime)
+	//校验数据存入Redis,存入时进行base64
+	err = setRedis(token, allDots, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -118,29 +112,17 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedWord []FontPoint
 	var checkedWord []FontPoint
-	ttl, err := redis.ExecRedisCommand("TTL", token)
+	//Redis里面存在的数据
+	cachedBuff, err := getRedis(token)
 	if err != nil {
 		return nil, err
 	}
-	if ttl.(int64) <= 0 {
-		_, err = redis.ExecRedisCommand("DEL", token)
-		return nil, errors.New("验证码已过期,请刷新重试")
-	}
-	//Redis里面存在的数据
-	cachedBuff, err := mredis.Bytes(redis.ExecRedisCommand("GET", token))
-	if err != nil {
-		return nil, errors.New("get captcha error:" + err.Error())
-	}
-	base64Buff, err := base64.StdEncoding.DecodeString(string(cachedBuff))
-	if err != nil {
-		return nil, errors.New("base64 decode error:" + err.Error())
-	}
-	err = json.Unmarshal(base64Buff, &cachedWord)
+	err = json.Unmarshal(cachedBuff, &cachedWord)
 	if err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 	//待校验数据
-	base64Buff, err = base64.StdEncoding.DecodeString(pointJson)
+	base64Buff, err := base64.StdEncoding.DecodeString(pointJson)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}

@@ -22,7 +22,6 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	"github.com/yasin-wu/captcha/redis"
 )
 
 func randomFileName(dir string) (string, error) {
@@ -137,14 +136,6 @@ func imgToBase64(img image.Image, fileType string) (string, error) {
 	index := bytes.IndexByte(dist, 0)
 	baseImage := dist[0:index]
 	return *(*string)(unsafe.Pointer(&baseImage)), nil
-}
-
-func SetRedis(token, data interface{}, expireTime int) error {
-	_, err := redis.ExecRedisCommand("SET", token, data, "EX", expireTime)
-	if err != nil {
-		return errors.New("存储至redis失败")
-	}
-	return nil
 }
 
 func generateJigsawPoint(originalWidth, originalHeight, jigsawWidth, jigsawHeight int) image.Point {

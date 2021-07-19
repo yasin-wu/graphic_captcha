@@ -12,7 +12,6 @@ import (
 	"os"
 
 	"github.com/disintegration/imaging"
-	mredis "github.com/gomodule/redigo/redis"
 	"github.com/yasin-wu/captcha/redis"
 )
 
@@ -46,17 +45,17 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	blockWidth := blockImg.Image.Bounds().Dx()
 	blockHeight := blockImg.Image.Bounds().Dy()
 	//随机拼图块出现的坐标
-	p := generateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
+	point := generateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
 	//绘制水印
 	err = drawText(oriRGBA, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
 	if err != nil {
 		return nil, err
 	}
 	//添加干扰图像
-	this.interfereBlock(oriRGBA, p, blockImg.FileName)
+	this.interfereBlock(oriRGBA, point, blockImg.FileName)
 
 	//处理拼图块中模糊部分
-	jigsaw := this.cropJigsaw(blockImg.Image, oriImg.Image, p)
+	jigsaw := this.cropJigsaw(blockImg.Image, oriImg.Image, point)
 	blur := imaging.Blur(jigsaw, this.blur)
 	blur = imaging.AdjustBrightness(blur, this.brightness)
 	blurRGB := image2RGBA(blur)
@@ -67,9 +66,10 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 			// 如果模板图像当前像素点不是透明色 copy源文件信息到目标图片中
 			_, _, _, a := blockImg.Image.At(x, y).RGBA()
 			if a > TransparentThreshold {
-				r, g, b, _ := oriRGBA.At(p.X+x, p.Y+y).RGBA()
+				r, g, b, _ := oriRGBA.At(point.X+x, point.Y+y).RGBA()
 				newImage.Set(x, y, colorTransparent(r, g, b, a))
-				oriRGBA.Set(x+p.X, y+p.Y, colorMix((blurRGB.At(x, y)).(color.RGBA), (oriRGBA.At(x+p.X, y+p.Y)).(color.RGBA)))
+				oriRGBA.Set(x+point.X, y+point.Y, colorMix((blurRGB.At(x, y)).(color.RGBA),
+					(oriRGBA.At(x+point.X, y+point.Y)).(color.RGBA)))
 			}
 			//防止数组越界判断
 			if x == (blockWidth-1) || y == (blockHeight-1) {
@@ -87,9 +87,9 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 				//如果模板当前像素点透明，但右侧像素点不透明
 				//如果模板当前像素点不透明，但下侧侧像素点透明
 				//如果模板当前像素点透明，但下侧侧像素点不透明
-				mix := colorMix(color.RGBA{R: 255, G: 255, B: 255, A: 220}, (oriRGBA.At(p.X+x, p.Y+y)).(color.RGBA))
+				mix := colorMix(color.RGBA{R: 255, G: 255, B: 255, A: 220}, (oriRGBA.At(point.X+x, point.Y+y)).(color.RGBA))
 				newImage.Set(x, y, color.White)
-				oriRGBA.Set(p.X+x, p.Y+y, mix)
+				oriRGBA.Set(point.X+x, point.Y+y, mix)
 			}
 		}
 	}
@@ -105,13 +105,8 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	//saveImage("/Users/yasin/tmp.png", "png", oriRGBA)
 	//saveImage("/Users/yasin/block.png", "png", newImage)
 
-	//校验数据base64后存入Redis
-	pBuff, err := json.Marshal(p)
-	if err != nil {
-		return nil, errors.New("json marshal error:" + err.Error())
-	}
-	data64 := base64.StdEncoding.EncodeToString(pBuff)
-	err = SetRedis(token, data64, this.expireTime)
+	//校验数据存入Redis,存入时进行base64
+	err = setRedis(token, point, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -126,29 +121,18 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedPoint image.Point
 	var checkedPoint image.Point
-	ttl, err := redis.ExecRedisCommand("TTL", token)
+
+	//Redis里面存在的数据
+	cachedBuff, err := getRedis(token)
 	if err != nil {
 		return nil, err
 	}
-	if ttl.(int64) <= 0 {
-		_, err = redis.ExecRedisCommand("DEL", token)
-		return nil, errors.New("验证码已过期，请刷新重试")
-	}
-	//Redis里面存在的数据
-	cachedBuff, err := mredis.Bytes(redis.ExecRedisCommand("GET", token))
-	if err != nil {
-		return nil, errors.New("get captcha error:" + err.Error())
-	}
-	base64Buff, err := base64.StdEncoding.DecodeString(string(cachedBuff))
-	if err != nil {
-		return nil, errors.New("base64 decode error:" + err.Error())
-	}
-	err = json.Unmarshal(base64Buff, &cachedPoint)
+	err = json.Unmarshal(cachedBuff, &cachedPoint)
 	if err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 	//待校验数据
-	base64Buff, err = base64.StdEncoding.DecodeString(pointJson)
+	base64Buff, err := base64.StdEncoding.DecodeString(pointJson)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}

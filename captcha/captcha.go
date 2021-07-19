@@ -1,8 +1,13 @@
 package captcha
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 
+	"github.com/davecgh/go-spew/spew"
+
+	mredis "github.com/gomodule/redigo/redis"
 	"github.com/yasin-wu/captcha/redis"
 )
 
@@ -120,4 +125,40 @@ func checkCaptchaConf(conf *CaptchaConfig) {
 	if conf.JigsawBrightness == 0 {
 		conf.JigsawBrightness = -30
 	}
+}
+
+//校验数据存入Redis,存入时进行base64
+func setRedis(token, data interface{}, expireTime int) error {
+	spew.Dump(data)
+	dataBuff, err := json.Marshal(data)
+	if err != nil {
+		return errors.New("json marshal error:" + err.Error())
+	}
+	data64 := base64.StdEncoding.EncodeToString(dataBuff)
+	_, err = redis.ExecRedisCommand("SET", token, data64, "EX", expireTime)
+	if err != nil {
+		return errors.New("存储至redis失败")
+	}
+	return nil
+}
+
+//从Redis获取待校验数据,并解base64
+func getRedis(token string) ([]byte, error) {
+	ttl, err := redis.ExecRedisCommand("TTL", token)
+	if err != nil {
+		return nil, err
+	}
+	if ttl.(int64) <= 0 {
+		_, err = redis.ExecRedisCommand("DEL", token)
+		return nil, errors.New("验证码已过期，请刷新重试")
+	}
+	cachedBuff, err := mredis.Bytes(redis.ExecRedisCommand("GET", token))
+	if err != nil {
+		return nil, errors.New("get captcha error:" + err.Error())
+	}
+	base64Buff, err := base64.StdEncoding.DecodeString(string(cachedBuff))
+	if err != nil {
+		return nil, errors.New("base64 decode error:" + err.Error())
+	}
+	return base64Buff, nil
 }
