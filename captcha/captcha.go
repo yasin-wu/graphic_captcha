@@ -84,13 +84,13 @@ func New(captchaType CaptchaType, conf *CaptchaConfig, redisConf *redis.RedisCon
 
 func checkCaptchaConf(conf *CaptchaConfig) {
 	if conf.ClickImagePath == "" {
-		conf.ClickImagePath = "../pic_click"
+		conf.ClickImagePath = "../conf/pic_click"
 	}
 	if conf.ClickWordFile == "" {
-		conf.ClickWordFile = "../fonts/license.txt"
+		conf.ClickWordFile = "../conf/fonts/license.txt"
 	}
 	if conf.FontFile == "" {
-		conf.FontFile = "../fonts/captcha.ttf"
+		conf.FontFile = "../conf/fonts/captcha.ttf"
 	}
 	if conf.ClickWordCount == 0 {
 		conf.ClickWordCount = 4
@@ -111,10 +111,10 @@ func checkCaptchaConf(conf *CaptchaConfig) {
 		conf.ExpireTime = 60
 	}
 	if conf.JigsawOriginalPath == "" {
-		conf.JigsawOriginalPath = "../jigsaw/original"
+		conf.JigsawOriginalPath = "../conf/jigsaw/original"
 	}
 	if conf.JigsawBlockPath == "" {
-		conf.JigsawBlockPath = "../jigsaw/sliding_block"
+		conf.JigsawBlockPath = "../conf/jigsaw/sliding_block"
 	}
 	if conf.JigsawThreshold == 0 {
 		conf.JigsawThreshold = 8
