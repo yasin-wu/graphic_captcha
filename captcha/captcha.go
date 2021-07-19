@@ -108,7 +108,7 @@ func checkCaptchaConf(conf *CaptchaConfig) {
 		conf.DPI = 72
 	}
 	if conf.ExpireTime == 0 {
-		conf.ExpireTime = 30
+		conf.ExpireTime = 60
 	}
 	if conf.JigsawOriginalPath == "" {
 		conf.JigsawOriginalPath = "../jigsaw/original"
@@ -129,12 +129,12 @@ func checkCaptchaConf(conf *CaptchaConfig) {
 
 //校验数据存入Redis,存入时进行base64
 func setRedis(token, data interface{}, expireTime int) error {
-	spew.Dump(data)
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
+	spew.Dump("数据:" + data64)
 	_, err = redis.ExecRedisCommand("SET", token, data64, "EX", expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
