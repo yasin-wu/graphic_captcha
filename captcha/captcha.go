@@ -14,26 +14,26 @@ type CaptchaVO struct {
 	Words               []string `json:"words"`                  //点选文字
 }
 
-type CaptchaConfig struct {
-	ClickImagePath     string  `json:"click_image_path"`     //点选校验图片目录
-	ClickWordFile      string  `json:"click_word_file"`      //点选文字文件
-	FontFile           string  `json:"font_file"`            //字体文件
-	ClickWordCount     int     `json:"click_word_count"`     //点选文字个数
-	FontSize           int     `json:"font_size"`            //字体大小
-	WatermarkText      string  `json:"watermark_text"`       //图片水印
-	WatermarkSize      int     `json:"watermark_size"`       //水印大小
-	DPI                float64 `json:"dpi"`                  //分辨率
-	ExpireTime         int     `json:"expire_time"`          //校验过期时间
-	JigsawOriginalPath string  `json:"jigsaw_original_path"` //滑块原图目录
-	JigsawBlockPath    string  `json:"jigsaw_block_path"`    //滑块抠图目录
-	JigsawThreshold    float64 `json:"jigsaw_threshold"`     //滑块容忍的偏差范围
-	JigsawBlur         float64 `json:"jigsaw_blur"`          //滑块空缺的模糊度
-	JigsawBrightness   float64 `json:"jigsaw_brightness"`    //滑块空缺亮度
+type RespMsg struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
 }
 
-type RespMsg struct {
-	Msg     string `json:"msg"`
-	Success bool   `json:"success"`
+type CaptchaConfig struct {
+	ClickImagePath     string  //点选校验图片目录
+	ClickWordFile      string  //点选文字文件
+	ClickWordCount     int     //点选文字个数
+	JigsawOriginalPath string  //滑块原图目录
+	JigsawBlockPath    string  //滑块抠图目录
+	JigsawThreshold    float64 //滑块容忍的偏差范围
+	JigsawBlur         float64 //滑块空缺的模糊度
+	JigsawBrightness   float64 //滑块空缺亮度
+	FontFile           string  //字体文件
+	FontSize           int     //字体大小
+	WatermarkText      string  //图片水印
+	WatermarkSize      int     //水印大小
+	DPI                float64 //分辨率
+	ExpireTime         int     //校验过期时间
 }
 
 type Captcha interface {
@@ -41,26 +41,43 @@ type Captcha interface {
 	Check(token, pointJson string) (*RespMsg, error)
 }
 
-var (
-	captchaConf *CaptchaConfig
-)
-
 func New(captchaType CaptchaType, conf *CaptchaConfig, redisConf *redis.RedisConfig) (Captcha, error) {
 	if conf == nil || redisConf == nil {
 		return nil, errors.New("conf is nil")
 	}
-	newCaptchaConf(conf)
+	checkCaptchaConf(conf)
 	redis.InitRedisPool(redisConf)
 	switch captchaType {
 	case CaptchaTypeClickWord:
-		return &ClickWord{}, nil
+		return &ClickWord{
+			imagePath:     conf.ClickImagePath,
+			wordFile:      conf.ClickWordFile,
+			wordCount:     conf.ClickWordCount,
+			fontFile:      conf.FontFile,
+			fontSize:      conf.FontSize,
+			watermarkText: conf.WatermarkText,
+			watermarkSize: conf.WatermarkSize,
+			dpi:           conf.DPI,
+			expireTime:    conf.ExpireTime,
+		}, nil
 	case CaptchaTypeBlockPuzzle:
-		return &BlockPuzzle{}, nil
+		return &BlockPuzzle{
+			originalPath:  conf.JigsawOriginalPath,
+			blockPath:     conf.JigsawBlockPath,
+			threshold:     conf.JigsawThreshold,
+			blur:          conf.JigsawBlur,
+			brightness:    conf.JigsawBrightness,
+			fontFile:      conf.FontFile,
+			watermarkText: conf.WatermarkText,
+			watermarkSize: conf.WatermarkSize,
+			dpi:           conf.DPI,
+			expireTime:    conf.ExpireTime,
+		}, nil
 	}
 	return nil, errors.New("验证类型错误")
 }
 
-func newCaptchaConf(conf *CaptchaConfig) {
+func checkCaptchaConf(conf *CaptchaConfig) {
 	if conf.ClickImagePath == "" {
 		conf.ClickImagePath = "../pic_click"
 	}
@@ -103,5 +120,4 @@ func newCaptchaConf(conf *CaptchaConfig) {
 	if conf.JigsawBrightness == 0 {
 		conf.JigsawBrightness = -30
 	}
-	captchaConf = conf
 }

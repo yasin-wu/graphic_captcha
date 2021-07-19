@@ -35,7 +35,7 @@ func TestCaptchaGet(t *testing.T) {
 		fmt.Println(err.Error())
 		return
 	}
-	token := fmt.Sprintf(captcha.TOKENFORMAT, string(captchaType), "yasin", time.Now().Unix())
+	token := fmt.Sprintf(captcha.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
 	_, err = c.Get(token)
 	if err != nil {

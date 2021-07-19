@@ -24,6 +24,15 @@ import (
 )
 
 type ClickWord struct {
+	imagePath     string  //点选校验图片目录
+	wordFile      string  //点选文字文件
+	wordCount     int     //点选文字个数
+	fontFile      string  //字体文件
+	fontSize      int     //字体大小
+	watermarkText string  //水印信息
+	watermarkSize int     //水印大小
+	dpi           float64 //分辨率
+	expireTime    int     //校验过期时间
 }
 
 type FontPoint struct {
@@ -33,7 +42,7 @@ type FontPoint struct {
 }
 
 func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
-	imgFile, err := randomFile(captchaConf.ClickImagePath)
+	imgFile, err := randomFile(this.imagePath)
 	if err != nil {
 		return nil, errors.New("random file error:" + err.Error())
 	}
@@ -56,12 +65,12 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
 
-	err = drawText(img)
+	err = drawText(img, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
 
-	fontBytes, err := ioutil.ReadFile(captchaConf.FontFile)
+	fontBytes, err := ioutil.ReadFile(this.fontFile)
 	if err != nil {
 		return nil, errors.New("read font file error:" + err.Error())
 	}
@@ -76,7 +85,7 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	//需要把这个存入Redis作为校验
 	var allDots []FontPoint
 	words := this.randomNoCheck(str)
-	fontSize := captchaConf.FontSize
+	fontSize := this.fontSize
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(str); i++ {
 		_w := (width - 24) / len(str)
@@ -105,7 +114,7 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 		return nil, errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(allDotsBuff)
-	err = SetRedis(token, data64)
+	err = SetRedis(token, data64, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +164,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	}
 	success := true
 	msg := "验证通过"
-	fontSize := captchaConf.FontSize
+	fontSize := this.fontSize
 	for index, word := range cachedWord {
 		if !(((checkedWord)[index].X >= word.X && (checkedWord)[index].X <= word.X+fontSize) &&
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
@@ -169,12 +178,12 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	return &RespMsg{Success: success, Msg: msg}, nil
+	return &RespMsg{Success: success, Message: msg}, nil
 }
 
 func (this *ClickWord) randomNoCheck(words []rune) []string {
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(captchaConf.ClickWordCount)
+	index := rand.Intn(this.wordCount)
 	var result []string
 	for i, v := range words {
 		if i == index {
@@ -193,7 +202,7 @@ func (this *ClickWord) randomHanZi() ([]rune, error) {
 	wordRunes := []rune(words)
 	var result []rune
 	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < captchaConf.ClickWordCount; i++ {
+	for i := 0; i < this.wordCount; i++ {
 		index := rand.Intn(len(wordRunes))
 		result = append(result, wordRunes[index])
 	}
@@ -201,7 +210,7 @@ func (this *ClickWord) randomHanZi() ([]rune, error) {
 }
 
 func (this *ClickWord) initWords() (string, error) {
-	license, err := os.Open(captchaConf.ClickWordFile)
+	license, err := os.Open(this.wordFile)
 	if err != nil {
 		return "", err
 	}

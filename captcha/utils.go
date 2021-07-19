@@ -73,11 +73,11 @@ func image2RGBA(oriImg image.Image) *image.RGBA {
 	return rgba
 }
 
-func drawText(img *image.RGBA) error {
-	watermarkLen := strings.Count(captchaConf.WatermarkText, "") - 1
-	pt := image.Pt(img.Bounds().Dx()-(captchaConf.WatermarkSize*watermarkLen), img.Bounds().Dy()-watermarkLen)
+func drawText(img *image.RGBA, watermarkText, fontFile string, watermarkSize int, dpi float64) error {
+	watermarkLen := strings.Count(watermarkText, "") - 1
+	pt := image.Pt(img.Bounds().Dx()-(watermarkSize*watermarkLen), img.Bounds().Dy()-watermarkLen)
 	fontColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
-	fontBytes, err := ioutil.ReadFile(captchaConf.FontFile)
+	fontBytes, err := ioutil.ReadFile(fontFile)
 	if err != nil {
 		return errors.New("read font file error:" + err.Error())
 	}
@@ -87,17 +87,17 @@ func drawText(img *image.RGBA) error {
 	}
 	c := freetype.NewContext()
 	//设置分辨率
-	c.SetDPI(captchaConf.DPI)
+	c.SetDPI(dpi)
 	//设置字体
 	c.SetFont(font)
 	//设置尺寸
-	c.SetFontSize(float64(captchaConf.WatermarkSize))
+	c.SetFontSize(float64(watermarkSize))
 	c.SetClip(img.Bounds())
 	//设置输出的图片
 	c.SetDst(img)
 	c.SetSrc(image.NewUniform(fontColor))
 	point := freetype.Pt(pt.X, pt.Y)
-	_, err = c.DrawString(captchaConf.WatermarkText, point)
+	_, err = c.DrawString(watermarkText, point)
 	return err
 }
 
@@ -152,8 +152,8 @@ func imgToBase64(img image.Image, fileType string) (string, error) {
 	return *(*string)(unsafe.Pointer(&baseImage)), nil
 }
 
-func SetRedis(token, data interface{}) error {
-	_, err := redis.ExecRedisCommand("SET", token, data, "EX", captchaConf.ExpireTime)
+func SetRedis(token, data interface{}, expireTime int) error {
+	_, err := redis.ExecRedisCommand("SET", token, data, "EX", expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
 	}

@@ -21,6 +21,16 @@ import (
 )
 
 type BlockPuzzle struct {
+	originalPath  string  //滑块原图目录
+	blockPath     string  //滑块抠图目录
+	threshold     float64 //滑块容忍的偏差范围
+	blur          float64 //滑块空缺的模糊度
+	brightness    float64 //滑块空缺亮度
+	fontFile      string  //字体文件
+	watermarkText string  //水印信息
+	watermarkSize int     //水印大小
+	dpi           float64 //分辨率
+	expireTime    int     //校验过期时间
 }
 
 type Image struct {
@@ -32,12 +42,12 @@ type Image struct {
 
 func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	//拼图原图
-	oriImg, err := this.newImage(captchaConf.JigsawOriginalPath)
+	oriImg, err := this.newImage(this.originalPath)
 	if err != nil {
 		return nil, err
 	}
 	//拼图模板图
-	blockImg, err := this.newImage(captchaConf.JigsawBlockPath)
+	blockImg, err := this.newImage(this.blockPath)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +59,7 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	//随机拼图块出现的坐标
 	p := generateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
 	//绘制水印
-	err = drawText(oriRGBA)
+	err = drawText(oriRGBA, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +68,8 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 
 	//处理拼图块中模糊部分
 	jigsaw := this.cropJigsaw(blockImg.Image, oriImg.Image, p)
-	blur := imaging.Blur(jigsaw, captchaConf.JigsawBlur)
-	blur = imaging.AdjustBrightness(blur, captchaConf.JigsawBrightness)
+	blur := imaging.Blur(jigsaw, this.blur)
+	blur = imaging.AdjustBrightness(blur, this.brightness)
 	blurRGB := image2RGBA(blur)
 
 	newImage := image.NewRGBA(blockImg.Image.Bounds())
@@ -107,7 +117,7 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	}
 	data64 := base64.StdEncoding.EncodeToString(pBuff)
 	fmt.Println(data64)
-	err = SetRedis(token, data64)
+	err = SetRedis(token, data64, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -156,8 +166,8 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 
 	success := false
 	msg := "验证失败"
-	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= captchaConf.JigsawThreshold) &&
-		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= captchaConf.JigsawThreshold) {
+	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= this.threshold) &&
+		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= this.threshold) {
 		success = true
 		msg = "验证通过"
 	}
@@ -167,7 +177,7 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	return &RespMsg{Success: success, Msg: msg}, nil
+	return &RespMsg{Success: success, Message: msg}, nil
 }
 
 func (this *BlockPuzzle) newImage(dir string) (*Image, error) {
@@ -204,7 +214,7 @@ func (this *BlockPuzzle) newImage(dir string) (*Image, error) {
 
 func (this *BlockPuzzle) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {
 	//干扰1
-	blockPath := captchaConf.JigsawBlockPath
+	blockPath := this.blockPath
 	var blockName1 string
 	for {
 		blockName1, _ = randomFileName(blockPath)
@@ -253,8 +263,8 @@ func (this *BlockPuzzle) doInterfere(blockFileName string, img *image.RGBA, poin
 	point = blockImg.Bounds().Min.Sub(image.Pt(-position, 0))
 	//处理拼图块中模糊部分
 	jigsaw := this.cropJigsaw(blockImg, img, point)
-	blur := imaging.Blur(jigsaw, captchaConf.JigsawBlur)
-	blur = imaging.AdjustBrightness(blur, captchaConf.JigsawBrightness)
+	blur := imaging.Blur(jigsaw, this.blur)
+	blur = imaging.AdjustBrightness(blur, this.brightness)
 	blurRGB := image2RGBA(blur)
 
 	for x := 0; x < blockImg.Bounds().Dx(); x++ {

@@ -8,7 +8,7 @@ const (
 )
 
 const (
-	TOKENFORMAT = "^CAPT:%s;CLI:%s;STAMP:%d#"
+	TokenFormat = "^CAPT:%s;CLI:%s;STAMP:%d#"
 )
 
 const (
