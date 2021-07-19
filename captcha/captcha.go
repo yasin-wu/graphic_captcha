@@ -46,84 +46,84 @@ type Captcha interface {
 	Check(token, pointJson string) (*RespMsg, error)
 }
 
-func New(captchaType CaptchaType, conf *CaptchaConfig, redisConf *redis.RedisConfig) (Captcha, error) {
-	if conf == nil || redisConf == nil {
+func New(captchaType CaptchaType, captchaConf *CaptchaConfig, redisConf *redis.RedisConfig) (Captcha, error) {
+	if captchaConf == nil || redisConf == nil {
 		return nil, errors.New("conf is nil")
 	}
-	checkCaptchaConf(conf)
+	checkCaptchaConf(captchaConf)
 	redis.InitRedisPool(redisConf)
 	switch captchaType {
 	case CaptchaTypeClickWord:
 		return &ClickWord{
-			imagePath:     conf.ClickImagePath,
-			wordFile:      conf.ClickWordFile,
-			wordCount:     conf.ClickWordCount,
-			fontFile:      conf.FontFile,
-			fontSize:      conf.FontSize,
-			watermarkText: conf.WatermarkText,
-			watermarkSize: conf.WatermarkSize,
-			dpi:           conf.DPI,
-			expireTime:    conf.ExpireTime,
+			imagePath:     captchaConf.ClickImagePath,
+			wordFile:      captchaConf.ClickWordFile,
+			wordCount:     captchaConf.ClickWordCount,
+			fontFile:      captchaConf.FontFile,
+			fontSize:      captchaConf.FontSize,
+			watermarkText: captchaConf.WatermarkText,
+			watermarkSize: captchaConf.WatermarkSize,
+			dpi:           captchaConf.DPI,
+			expireTime:    captchaConf.ExpireTime,
 		}, nil
 	case CaptchaTypeBlockPuzzle:
 		return &BlockPuzzle{
-			originalPath:  conf.JigsawOriginalPath,
-			blockPath:     conf.JigsawBlockPath,
-			threshold:     conf.JigsawThreshold,
-			blur:          conf.JigsawBlur,
-			brightness:    conf.JigsawBrightness,
-			fontFile:      conf.FontFile,
-			watermarkText: conf.WatermarkText,
-			watermarkSize: conf.WatermarkSize,
-			dpi:           conf.DPI,
-			expireTime:    conf.ExpireTime,
+			originalPath:  captchaConf.JigsawOriginalPath,
+			blockPath:     captchaConf.JigsawBlockPath,
+			threshold:     captchaConf.JigsawThreshold,
+			blur:          captchaConf.JigsawBlur,
+			brightness:    captchaConf.JigsawBrightness,
+			fontFile:      captchaConf.FontFile,
+			watermarkText: captchaConf.WatermarkText,
+			watermarkSize: captchaConf.WatermarkSize,
+			dpi:           captchaConf.DPI,
+			expireTime:    captchaConf.ExpireTime,
 		}, nil
 	}
 	return nil, errors.New("验证类型错误")
 }
 
-func checkCaptchaConf(conf *CaptchaConfig) {
-	if conf.ClickImagePath == "" {
-		conf.ClickImagePath = "../conf/pic_click"
+func checkCaptchaConf(captchaConfig *CaptchaConfig) {
+	if captchaConfig.ClickImagePath == "" {
+		captchaConfig.ClickImagePath = "../conf/pic_click"
 	}
-	if conf.ClickWordFile == "" {
-		conf.ClickWordFile = "../conf/fonts/license.txt"
+	if captchaConfig.ClickWordFile == "" {
+		captchaConfig.ClickWordFile = "../conf/fonts/license.txt"
 	}
-	if conf.FontFile == "" {
-		conf.FontFile = "../conf/fonts/captcha.ttf"
+	if captchaConfig.FontFile == "" {
+		captchaConfig.FontFile = "../conf/fonts/captcha.ttf"
 	}
-	if conf.ClickWordCount == 0 {
-		conf.ClickWordCount = 4
+	if captchaConfig.ClickWordCount == 0 {
+		captchaConfig.ClickWordCount = 4
 	}
-	if conf.FontSize == 0 {
-		conf.FontSize = 26
+	if captchaConfig.FontSize == 0 {
+		captchaConfig.FontSize = 26
 	}
-	if conf.WatermarkText == "" {
-		conf.WatermarkText = "yasin"
+	if captchaConfig.WatermarkText == "" {
+		captchaConfig.WatermarkText = "yasin"
 	}
-	if conf.WatermarkSize == 0 {
-		conf.WatermarkSize = 14
+	if captchaConfig.WatermarkSize == 0 {
+		captchaConfig.WatermarkSize = 14
 	}
-	if conf.DPI == 0 {
-		conf.DPI = 72
+	if captchaConfig.DPI == 0 {
+		captchaConfig.DPI = 72
 	}
-	if conf.ExpireTime == 0 {
-		conf.ExpireTime = 60
+	if captchaConfig.ExpireTime == 0 {
+		captchaConfig.ExpireTime = 60
 	}
-	if conf.JigsawOriginalPath == "" {
-		conf.JigsawOriginalPath = "../conf/jigsaw/original"
+	if captchaConfig.JigsawOriginalPath == "" {
+		captchaConfig.JigsawOriginalPath = "../conf/jigsaw/original"
 	}
-	if conf.JigsawBlockPath == "" {
-		conf.JigsawBlockPath = "../conf/jigsaw/sliding_block"
+	if captchaConfig.JigsawBlockPath == "" {
+		captchaConfig.JigsawBlockPath = "../conf/jigsaw/sliding_block"
 	}
-	if conf.JigsawThreshold == 0 {
-		conf.JigsawThreshold = 8
+	if captchaConfig.JigsawThreshold == 0 {
+		captchaConfig.JigsawThreshold = 8
 	}
-	if conf.JigsawBlur == 0 {
-		conf.JigsawBlur = 1.3
+	if captchaConfig.JigsawBlur == 0 {
+		captchaConfig.JigsawBlur = 1.3
 	}
-	if conf.JigsawBrightness == 0 {
-		conf.JigsawBrightness = -30
+	if captchaConfig.JigsawBrightness == 0 {
+		captchaConfig.JigsawBrightness = -30
 	}
 }
 
