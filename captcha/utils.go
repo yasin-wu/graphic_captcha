@@ -208,52 +208,6 @@ func saveImage(fileName, fileType string, img image.Image) {
 	}
 }
 
-/*func saveImage(filePath string, img image.Image, opt int) bool {
-	var file io.Writer
-	if !strings.Contains(filePath, ".") {
-		return false
-	}
-	_, e := os.Stat(filePath)
-	if e != nil {
-		f, err := os.Create(filePath)
-		defer f.Close()
-		file = f
-		if err != nil {
-			return false
-		}
-	} else {
-		e := os.Remove(filePath)
-		if e != nil {
-			fmt.Println(e)
-		}
-		f, err := os.Create(filePath)
-		defer f.Close()
-		file = f
-		if err != nil {
-			return false
-		}
-	}
-	if strings.HasSuffix(filePath, "jpg") || strings.HasSuffix(filePath, "jpeg") {
-		e := jpeg.Encode(file, img, &jpeg.Options{opt})
-		if e != nil {
-			return false
-		}
-	} else if strings.HasSuffix(filePath, "png") {
-		e := "png".Encode(file, img)
-		if e != nil {
-			return false
-		}
-	} else if strings.HasSuffix(filePath, "gif") {
-		e := gif.Encode(file, img, nil)
-		if e != nil {
-			return false
-		}
-	} else {
-		fmt.Errorf("不支持的图片格式")
-	}
-	return true
-}*/
-
 func isFile(path string) bool {
 	fi, e := os.Stat(path)
 	if e != nil {
