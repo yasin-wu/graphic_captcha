@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -95,10 +94,16 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 		}
 	}
 	oriBase64, err := imgToBase64(oriRGBA, oriImg.FileType)
+	if err != nil {
+		return nil, errors.New("image to base64 error:" + err.Error())
+	}
 	blockBase64, err := imgToBase64(newImage, blockImg.FileType)
+	if err != nil {
+		return nil, errors.New("image to base64 error:" + err.Error())
+	}
 
-	//saveImage("/Users/yasin/tmp.png", oriRGBA, 100)
-	//saveImage("/Users/yasin/block.png", newImage, 100)
+	//saveImage("/Users/yasin/tmp.png", "png", oriRGBA)
+	//saveImage("/Users/yasin/block.png", "png", newImage)
 
 	//校验数据base64后存入Redis
 	pBuff, err := json.Marshal(p)
@@ -106,12 +111,10 @@ func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 		return nil, errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(pBuff)
-	fmt.Println(data64)
 	err = SetRedis(token, data64, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
-
 	return &CaptchaVO{
 		Token:               token,
 		CaptchaType:         string(CaptchaTypeBlockPuzzle),

@@ -94,6 +94,9 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
+
+	//saveImage("/Users/yasin/tmp.png", "png", img)
+
 	//校验数据base64后存入Redis
 	allDotsBuff, err := json.Marshal(allDots)
 	if err != nil {

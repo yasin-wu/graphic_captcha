@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	captchaType = captcha.CaptchaTypeBlockPuzzle
+	captchaType = captcha.CaptchaTypeClickWord
 	captchaConf = &captcha.CaptchaConfig{
 		ClickImagePath:     "/Users/yasin/GolandProjects/yasin-wu/captcha/pic_click",
 		ClickWordFile:      "/Users/yasin/GolandProjects/yasin-wu/captcha/fonts/license.txt",

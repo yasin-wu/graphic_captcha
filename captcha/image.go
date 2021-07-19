@@ -24,14 +24,14 @@ func NewImage(dir string) (*Image, error) {
 	if !isFile(dir) {
 		fileName, err = randomFileName(dir)
 		if err != nil {
-			log.Print(err)
+			log.Printf("random file name error: %v", err)
 			return nil, err
 		}
 		filePath = dir + "/" + fileName
 	}
 	imgFile, err := os.Open(filePath)
 	if err != nil {
-		log.Print(err)
+		log.Printf("open file error: %v", err)
 		return nil, err
 	}
 	defer imgFile.Close()
@@ -43,7 +43,7 @@ func NewImage(dir string) (*Image, error) {
 		staticImg, err = jpeg.Decode(imgFile)
 	}
 	if err != nil {
-		log.Print(err)
+		log.Printf("image decode error: %v", err)
 		return nil, err
 	}
 	return &Image{

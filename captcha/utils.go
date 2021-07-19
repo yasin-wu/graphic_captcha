@@ -8,11 +8,10 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -199,7 +198,26 @@ func FloatRound(f float64, n int) float64 {
 	return res
 }
 
-func saveImage(filePath string, img image.Image, opt int) bool {
+func saveImage(fileName, fileType string, img image.Image) {
+	var err error
+	tmpFile, err := os.Create(fileName)
+	if err != nil {
+		log.Printf("create image file error: %v", err)
+		return
+	}
+	defer tmpFile.Close()
+	switch fileType {
+	case "png":
+		err = png.Encode(tmpFile, img)
+	default:
+		err = jpeg.Encode(tmpFile, img, &jpeg.Options{Quality: 100})
+	}
+	if err != nil {
+		log.Printf("image encode error: %v", err)
+	}
+}
+
+/*func saveImage(filePath string, img image.Image, opt int) bool {
 	var file io.Writer
 	if !strings.Contains(filePath, ".") {
 		return false
@@ -230,7 +248,7 @@ func saveImage(filePath string, img image.Image, opt int) bool {
 			return false
 		}
 	} else if strings.HasSuffix(filePath, "png") {
-		e := png.Encode(file, img)
+		e := "png".Encode(file, img)
 		if e != nil {
 			return false
 		}
@@ -243,7 +261,7 @@ func saveImage(filePath string, img image.Image, opt int) bool {
 		fmt.Errorf("不支持的图片格式")
 	}
 	return true
-}
+}*/
 
 func isFile(path string) bool {
 	fi, e := os.Stat(path)
