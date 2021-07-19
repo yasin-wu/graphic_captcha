@@ -1,4 +1,4 @@
-package captcha
+package test
 
 import (
 	"encoding/base64"
@@ -15,11 +15,11 @@ import (
 var (
 	captchaType = captcha.CaptchaTypeClickWord
 	captchaConf = &captcha.CaptchaConfig{
-		ClickImagePath:     "./conf/pic_click",
-		ClickWordFile:      "./conf/fonts/license.txt",
-		FontFile:           "./conf/fonts/captcha.ttf",
-		JigsawOriginalPath: "./conf/jigsaw/original",
-		JigsawBlockPath:    "./conf/jigsaw/sliding_block",
+		ClickImagePath:     "../conf/pic_click",
+		ClickWordFile:      "../conf/fonts/license.txt",
+		FontFile:           "../conf/fonts/captcha.ttf",
+		JigsawOriginalPath: "../conf/jigsaw/original",
+		JigsawBlockPath:    "../conf/jigsaw/sliding_block",
 		ExpireTime:         30 * 60,
 	}
 	redisConf = &redis.RedisConfig{
