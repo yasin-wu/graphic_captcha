@@ -26,20 +26,20 @@ import (
 	"github.com/yasin-wu/captcha/redis"
 )
 
-func randomFile(path string) (*os.File, error) {
-	fileName, err := randomFileName(path)
+func randomFile(dir string) (*os.File, error) {
+	fileName, err := randomFileName(dir)
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(path + "/" + fileName)
+	file, err := os.Open(dir + "/" + fileName)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
 }
 
-func randomFileName(path string) (string, error) {
-	files, err := ioutil.ReadDir(path)
+func randomFileName(dir string) (string, error) {
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return "", err
 	}
@@ -255,4 +255,12 @@ func saveImage(filePath string, img image.Image, opt int) bool {
 		fmt.Errorf("不支持的图片格式")
 	}
 	return true
+}
+
+func isFile(path string) bool {
+	fi, e := os.Stat(path)
+	if e != nil {
+		return false
+	}
+	return !fi.IsDir()
 }

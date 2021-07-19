@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
-	"path"
 	"strings"
 	"time"
 
@@ -42,29 +39,18 @@ type FontPoint struct {
 }
 
 func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
-	imgFile, err := randomFile(this.imagePath)
+	oriImage, err := NewImage(this.imagePath)
 	if err != nil {
-		return nil, errors.New("random file error:" + err.Error())
+		return nil, errors.New("new image error:" + err.Error())
 	}
-	defer imgFile.Close()
-	fileType := strings.Replace(path.Ext(path.Base(imgFile.Name())), ".", "", -1)
-	var staticImg image.Image
-	switch fileType {
-	case "png":
-		staticImg, err = png.Decode(imgFile)
-	default:
-		staticImg, err = jpeg.Decode(imgFile)
-	}
-	if err != nil {
-		return nil, errors.New("image decode error:" + err.Error())
-	}
+	staticImg := oriImage.Image
+	fileType := oriImage.FileType
 	img := image2RGBA(staticImg)
 	if img == nil {
 		return nil, errors.New("image to rgba failed")
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-
 	err = drawText(img, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())

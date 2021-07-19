@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/jpeg"
 	"image/png"
 	"log"
 	"math"
 	"os"
-	"path"
-	"strings"
 
 	"github.com/disintegration/imaging"
 	mredis "github.com/gomodule/redigo/redis"
@@ -33,21 +30,14 @@ type BlockPuzzle struct {
 	expireTime    int     //校验过期时间
 }
 
-type Image struct {
-	FileType string
-	FileName string
-	Image    image.Image
-	Config   image.Config
-}
-
 func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	//拼图原图
-	oriImg, err := this.newImage(this.originalPath)
+	oriImg, err := NewImage(this.originalPath)
 	if err != nil {
 		return nil, err
 	}
 	//拼图模板图
-	blockImg, err := this.newImage(this.blockPath)
+	blockImg, err := NewImage(this.blockPath)
 	if err != nil {
 		return nil, err
 	}
@@ -178,38 +168,6 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
 	return &RespMsg{Success: success, Message: msg}, nil
-}
-
-func (this *BlockPuzzle) newImage(dir string) (*Image, error) {
-	var staticImg image.Image
-	var err error
-	fileName, err := randomFileName(dir)
-	if err != nil {
-		return nil, err
-	}
-	filePath := dir + "/" + fileName
-	imgFile, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer imgFile.Close()
-	fileType := strings.Replace(path.Ext(path.Base(imgFile.Name())), ".", "", -1)
-	switch fileType {
-	case "png":
-		staticImg, err = png.Decode(imgFile)
-	default:
-		staticImg, err = jpeg.Decode(imgFile)
-	}
-	if err != nil {
-		return nil, err
-	}
-	imgConfig, _, _ := image.DecodeConfig(imgFile)
-	return &Image{
-		FileType: fileType,
-		FileName: fileName,
-		Image:    staticImg,
-		Config:   imgConfig,
-	}, nil
 }
 
 func (this *BlockPuzzle) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {

@@ -37,20 +37,21 @@ func TestCaptchaGet(t *testing.T) {
 	}
 	token := fmt.Sprintf(captcha.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
-	_, err = c.Get(token)
+	cv, err := c.Get(token)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
+	spew.Dump(cv)
 }
 
 func TestCaptchaCheck(t *testing.T) {
 	c, err := captcha.New(captchaType, captchaConf, redisConf)
-	/*if err != nil {
+	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	p1 := captcha.FontPoint{
+	/*p1 := captcha.FontPoint{
 		X:    15,
 		Y:    111,
 		Text: "更",
