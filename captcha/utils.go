@@ -26,18 +26,6 @@ import (
 	"github.com/yasin-wu/captcha/redis"
 )
 
-func randomFile(dir string) (*os.File, error) {
-	fileName, err := randomFileName(dir)
-	if err != nil {
-		return nil, err
-	}
-	file, err := os.Open(dir + "/" + fileName)
-	if err != nil {
-		return nil, err
-	}
-	return file, nil
-}
-
 func randomFileName(dir string) (string, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
