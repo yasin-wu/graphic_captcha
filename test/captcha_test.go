@@ -14,7 +14,7 @@ import (
 
 var (
 	captchaType = captcha.CaptchaTypeClickWord
-	captchaConf = &captcha.CaptchaConfig{
+	captchaConf = &captcha.Config{
 		ClickImagePath:     "../conf/pic_click",
 		ClickWordFile:      "../conf/fonts/license.txt",
 		FontFile:           "../conf/fonts/captcha.ttf",
@@ -22,7 +22,7 @@ var (
 		JigsawBlockPath:    "../conf/jigsaw/sliding_block",
 		ExpireTime:         30 * 60,
 	}
-	redisConf = &redis.RedisConfig{
+	redisConf = &redis.Config{
 		NetWork:  "tcp",
 		Host:     "192.168.131.135:6379",
 		PassWord: "1qazxsw21201",

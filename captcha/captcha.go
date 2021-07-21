@@ -24,7 +24,7 @@ type RespMsg struct {
 	Message string `json:"message"`
 }
 
-type CaptchaConfig struct {
+type Config struct {
 	ClickImagePath     string  //点选校验图片目录
 	ClickWordFile      string  //点选文字文件
 	ClickWordCount     int     //点选文字个数
@@ -46,7 +46,7 @@ type Captcha interface {
 	Check(token, pointJson string) (*RespMsg, error)
 }
 
-func New(captchaType CaptchaType, captchaConf *CaptchaConfig, redisConf *redis.RedisConfig) (Captcha, error) {
+func New(captchaType CaptchaType, captchaConf *Config, redisConf *redis.Config) (Captcha, error) {
 	if captchaConf == nil || redisConf == nil {
 		return nil, errors.New("conf is nil")
 	}
@@ -82,48 +82,48 @@ func New(captchaType CaptchaType, captchaConf *CaptchaConfig, redisConf *redis.R
 	return nil, errors.New("验证类型错误")
 }
 
-func checkCaptchaConf(captchaConfig *CaptchaConfig) {
-	if captchaConfig.ClickImagePath == "" {
-		captchaConfig.ClickImagePath = "../conf/pic_click"
+func checkCaptchaConf(config *Config) {
+	if config.ClickImagePath == "" {
+		config.ClickImagePath = "../conf/pic_click"
 	}
-	if captchaConfig.ClickWordFile == "" {
-		captchaConfig.ClickWordFile = "../conf/fonts/license.txt"
+	if config.ClickWordFile == "" {
+		config.ClickWordFile = "../conf/fonts/license.txt"
 	}
-	if captchaConfig.FontFile == "" {
-		captchaConfig.FontFile = "../conf/fonts/captcha.ttf"
+	if config.FontFile == "" {
+		config.FontFile = "../conf/fonts/captcha.ttf"
 	}
-	if captchaConfig.ClickWordCount == 0 {
-		captchaConfig.ClickWordCount = 4
+	if config.ClickWordCount == 0 {
+		config.ClickWordCount = 4
 	}
-	if captchaConfig.FontSize == 0 {
-		captchaConfig.FontSize = 26
+	if config.FontSize == 0 {
+		config.FontSize = 26
 	}
-	if captchaConfig.WatermarkText == "" {
-		captchaConfig.WatermarkText = "yasin"
+	if config.WatermarkText == "" {
+		config.WatermarkText = "yasin"
 	}
-	if captchaConfig.WatermarkSize == 0 {
-		captchaConfig.WatermarkSize = 14
+	if config.WatermarkSize == 0 {
+		config.WatermarkSize = 14
 	}
-	if captchaConfig.DPI == 0 {
-		captchaConfig.DPI = 72
+	if config.DPI == 0 {
+		config.DPI = 72
 	}
-	if captchaConfig.ExpireTime == 0 {
-		captchaConfig.ExpireTime = 60
+	if config.ExpireTime == 0 {
+		config.ExpireTime = 60
 	}
-	if captchaConfig.JigsawOriginalPath == "" {
-		captchaConfig.JigsawOriginalPath = "../conf/jigsaw/original"
+	if config.JigsawOriginalPath == "" {
+		config.JigsawOriginalPath = "../conf/jigsaw/original"
 	}
-	if captchaConfig.JigsawBlockPath == "" {
-		captchaConfig.JigsawBlockPath = "../conf/jigsaw/sliding_block"
+	if config.JigsawBlockPath == "" {
+		config.JigsawBlockPath = "../conf/jigsaw/sliding_block"
 	}
-	if captchaConfig.JigsawThreshold == 0 {
-		captchaConfig.JigsawThreshold = 8
+	if config.JigsawThreshold == 0 {
+		config.JigsawThreshold = 8
 	}
-	if captchaConfig.JigsawBlur == 0 {
-		captchaConfig.JigsawBlur = 1.3
+	if config.JigsawBlur == 0 {
+		config.JigsawBlur = 1.3
 	}
-	if captchaConfig.JigsawBrightness == 0 {
-		captchaConfig.JigsawBrightness = -30
+	if config.JigsawBrightness == 0 {
+		config.JigsawBrightness = -30
 	}
 }
 
@@ -135,7 +135,7 @@ func setRedis(token, data interface{}, expireTime int) error {
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
 	spew.Dump("数据:" + data64)
-	_, err = redis.ExecRedisCommand("SET", token, data64, "EX", expireTime)
+	_, err = redis.ExecCommand("SET", token, data64, "EX", expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
 	}
@@ -144,15 +144,15 @@ func setRedis(token, data interface{}, expireTime int) error {
 
 //从Redis获取待校验数据,并解base64
 func getRedis(token string) ([]byte, error) {
-	ttl, err := redis.ExecRedisCommand("TTL", token)
+	ttl, err := redis.ExecCommand("TTL", token)
 	if err != nil {
 		return nil, err
 	}
 	if ttl.(int64) <= 0 {
-		_, err = redis.ExecRedisCommand("DEL", token)
+		_, err = redis.ExecCommand("DEL", token)
 		return nil, errors.New("验证码已过期，请刷新重试")
 	}
-	cachedBuff, err := mredis.Bytes(redis.ExecRedisCommand("GET", token))
+	cachedBuff, err := mredis.Bytes(redis.ExecCommand("GET", token))
 	if err != nil {
 		return nil, errors.New("get captcha error:" + err.Error())
 	}

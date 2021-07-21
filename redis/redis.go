@@ -25,7 +25,7 @@ const (
 	defaultIdleTimeout    = 300 * time.Second
 )
 
-type RedisConfig struct {
+type Config struct {
 	Host           string //Redis地址
 	DB             int    //使用的数据库
 	PassWord       string //密码
@@ -38,7 +38,7 @@ type RedisConfig struct {
 	ExpireTime     int    //key过期时间,单位秒
 }
 
-func InitRedisPool(conf *RedisConfig) {
+func InitRedisPool(conf *Config) {
 	if conf == nil {
 		panic("redis config is nil")
 	}
@@ -92,7 +92,7 @@ func InitRedisPool(conf *RedisConfig) {
 	}
 }
 
-func checkConfig(conf *RedisConfig) {
+func checkConfig(conf *Config) {
 	if conf.Host == "" {
 		conf.Host = defaultHost
 	}
@@ -119,7 +119,7 @@ func checkConfig(conf *RedisConfig) {
 	}
 }
 
-func ExecRedisCommand(command string, args ...interface{}) (interface{}, error) {
+func ExecCommand(command string, args ...interface{}) (interface{}, error) {
 	conn := RedisPool.Get()
 	defer conn.Close()
 	return conn.Do(command, args...)
