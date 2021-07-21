@@ -17,6 +17,7 @@ const (
 	defaultHost           = "127.0.0.1:6379"
 	defaultPassWord       = ""
 	defaultDB             = 0
+	defaultNetWork        = "tcp"
 	defaultMaxIdle        = 10
 	defaultMaxActive      = 0
 	defaultConnectTimeout = 5000
@@ -101,6 +102,9 @@ func checkConfig(conf *Config) {
 	}
 	if conf.DB == 0 {
 		conf.DB = defaultDB
+	}
+	if conf.NetWork == "" {
+		conf.NetWork = defaultNetWork
 	}
 	if conf.MaxIdle == 0 {
 		conf.MaxIdle = defaultMaxIdle
