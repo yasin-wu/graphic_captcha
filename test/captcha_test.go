@@ -9,7 +9,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/yasin-wu/captcha/captcha"
-	"github.com/yasin-wu/captcha/redis"
+	"github.com/yasin-wu/utils/redis"
 )
 
 var (
@@ -47,8 +47,8 @@ func TestCaptchaGet(t *testing.T) {
 func TestCaptchaCheck(t *testing.T) {
 	c, err := captcha.New(captchaType, captchaConf, redisConf)
 	//先转为byte,然后base64
-	pointJson := "W3siWCI6MSwiWSI6OTAsIlRleHQiOiLor6UifSx7IlgiOjc2LCJZIjozOSwiVGV4dCI6IuecvCJ9LHsiWCI6MTY4LCJZIjo1NSwiVGV4dCI6IuWwmCJ9XQ=="
-	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYyNjY3OTAzNCM="
+	pointJson := "W3siWCI6MTYsIlkiOjIwLCJUZXh0Ijoi5LulIn0seyJYIjoxMTEsIlkiOjEwLCJUZXh0Ijoi5YyWIn0seyJYIjoyNTcsIlkiOjQzLCJUZXh0Ijoi6ZyAIn1d"
+	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYyNzM2Mzk1MiM="
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		fmt.Println(err.Error())

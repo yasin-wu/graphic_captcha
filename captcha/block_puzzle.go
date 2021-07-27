@@ -150,7 +150,7 @@ func (this *BlockPuzzle) Check(token, pointJson string) (*RespMsg, error) {
 	}
 
 	//验证后将缓存删除，同一个验证码只能用于验证一次
-	_, err = redis.ExecCommand("DEL", token)
+	_, err = redis.RedisClient.Exec("DEL", token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}

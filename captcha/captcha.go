@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 
+	mredis "github.com/gomodule/redigo/redis"
+
 	"github.com/davecgh/go-spew/spew"
 
-	mredis "github.com/gomodule/redigo/redis"
 	"github.com/yasin-wu/captcha/redis"
+	yredis "github.com/yasin-wu/utils/redis"
 )
 
 type CaptchaVO struct {
@@ -46,12 +48,12 @@ type Captcha interface {
 	Check(token, pointJson string) (*RespMsg, error)
 }
 
-func New(captchaType CaptchaType, captchaConf *Config, redisConf *redis.Config) (Captcha, error) {
+func New(captchaType CaptchaType, captchaConf *Config, redisConf *yredis.Config) (Captcha, error) {
 	if captchaConf == nil || redisConf == nil {
 		return nil, errors.New("conf is nil")
 	}
 	checkCaptchaConf(captchaConf)
-	redis.InitRedisPool(redisConf)
+	redis.InitRedis(redisConf)
 	switch captchaType {
 	case CaptchaTypeClickWord:
 		return &ClickWord{
@@ -135,7 +137,7 @@ func setRedis(token, data interface{}, expireTime int) error {
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
 	spew.Dump("数据:" + data64)
-	_, err = redis.ExecCommand("SET", token, data64, "EX", expireTime)
+	_, err = redis.RedisClient.Exec("SET", token, data64, "EX", expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
 	}
@@ -144,15 +146,15 @@ func setRedis(token, data interface{}, expireTime int) error {
 
 //从Redis获取待校验数据,并解base64
 func getRedis(token string) ([]byte, error) {
-	ttl, err := redis.ExecCommand("TTL", token)
+	ttl, err := redis.RedisClient.Exec("TTL", token)
 	if err != nil {
 		return nil, err
 	}
 	if ttl.(int64) <= 0 {
-		_, err = redis.ExecCommand("DEL", token)
+		_, err = redis.RedisClient.Exec("DEL", token)
 		return nil, errors.New("验证码已过期，请刷新重试")
 	}
-	cachedBuff, err := mredis.Bytes(redis.ExecCommand("GET", token))
+	cachedBuff, err := mredis.Bytes(redis.RedisClient.Exec("GET", token))
 	if err != nil {
 		return nil, errors.New("get captcha error:" + err.Error())
 	}
