@@ -9,5 +9,3 @@ require (
 	github.com/gomodule/redigo v1.8.5
 	github.com/yasin-wu/utils v1.2.1
 )
-
-replace github.com/yasin-wu/captcha => ./
