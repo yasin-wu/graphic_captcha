@@ -37,6 +37,8 @@ type FontPoint struct {
 	Text string
 }
 
+var _ Captcha = (*ClickWord)(nil)
+
 func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	oriImage, err := NewImage(this.imagePath)
 	if err != nil {

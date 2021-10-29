@@ -28,6 +28,8 @@ type BlockPuzzle struct {
 	expireTime    int     //校验过期时间
 }
 
+var _ Captcha = (*BlockPuzzle)(nil)
+
 func (this *BlockPuzzle) Get(token string) (*CaptchaVO, error) {
 	//拼图原图
 	oriImg, err := NewImage(this.originalPath)
