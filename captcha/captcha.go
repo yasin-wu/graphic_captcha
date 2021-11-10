@@ -4,8 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-
-	mredis "github.com/gomodule/redigo/redis"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 
@@ -27,20 +26,20 @@ type RespMsg struct {
 }
 
 type Config struct {
-	ClickImagePath     string  //点选校验图片目录
-	ClickWordFile      string  //点选文字文件
-	ClickWordCount     int     //点选文字个数
-	JigsawOriginalPath string  //滑块原图目录
-	JigsawBlockPath    string  //滑块抠图目录
-	JigsawThreshold    float64 //滑块容忍的偏差范围
-	JigsawBlur         float64 //滑块空缺的模糊度
-	JigsawBrightness   float64 //滑块空缺亮度
-	FontFile           string  //字体文件
-	FontSize           int     //字体大小
-	WatermarkText      string  //图片水印
-	WatermarkSize      int     //水印大小
-	DPI                float64 //分辨率
-	ExpireTime         int     //校验过期时间
+	ClickImagePath     string        //点选校验图片目录
+	ClickWordFile      string        //点选文字文件
+	ClickWordCount     int           //点选文字个数
+	JigsawOriginalPath string        //滑块原图目录
+	JigsawBlockPath    string        //滑块抠图目录
+	JigsawThreshold    float64       //滑块容忍的偏差范围
+	JigsawBlur         float64       //滑块空缺的模糊度
+	JigsawBrightness   float64       //滑块空缺亮度
+	FontFile           string        //字体文件
+	FontSize           int           //字体大小
+	WatermarkText      string        //图片水印
+	WatermarkSize      int           //水印大小
+	DPI                float64       //分辨率
+	ExpireTime         time.Duration //校验过期时间
 }
 
 type Captcha interface {
@@ -110,7 +109,7 @@ func checkCaptchaConf(config *Config) {
 		config.DPI = 72
 	}
 	if config.ExpireTime == 0 {
-		config.ExpireTime = 60
+		config.ExpireTime = time.Minute
 	}
 	if config.JigsawOriginalPath == "" {
 		config.JigsawOriginalPath = "../conf/jigsaw/original"
@@ -130,14 +129,14 @@ func checkCaptchaConf(config *Config) {
 }
 
 //校验数据存入Redis,存入时进行base64
-func setRedis(token, data interface{}, expireTime int) error {
+func setRedis(token string, data interface{}, expireTime time.Duration) error {
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
 	spew.Dump("数据:" + data64)
-	_, err = redis.RedisClient.Exec("SET", token, data64, "EX", expireTime)
+	err = redis.RedisClient.Set(token, data64, expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
 	}
@@ -146,19 +145,24 @@ func setRedis(token, data interface{}, expireTime int) error {
 
 //从Redis获取待校验数据,并解base64
 func getRedis(token string) ([]byte, error) {
-	ttl, err := redis.RedisClient.Exec("TTL", token)
+	ttl, err := redis.RedisClient.TTL(token)
 	if err != nil {
 		return nil, err
 	}
-	if ttl.(int64) <= 0 {
-		_, err = redis.RedisClient.Exec("DEL", token)
+	if ttl <= 0 {
+		err = redis.RedisClient.Del(token)
 		return nil, errors.New("验证码已过期，请刷新重试")
 	}
-	cachedBuff, err := mredis.Bytes(redis.RedisClient.Exec("GET", token))
+	cachedBuff, err := redis.RedisClient.Get(token)
 	if err != nil {
 		return nil, errors.New("get captcha error:" + err.Error())
 	}
-	base64Buff, err := base64.StdEncoding.DecodeString(string(cachedBuff))
+	var cachedStr string
+	err = json.Unmarshal(cachedBuff, &cachedStr)
+	if err != nil {
+		return nil, errors.New("json unmarshal error:" + err.Error())
+	}
+	base64Buff, err := base64.StdEncoding.DecodeString(cachedStr)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}

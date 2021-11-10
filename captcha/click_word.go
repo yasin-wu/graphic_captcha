@@ -20,15 +20,15 @@ import (
 )
 
 type ClickWord struct {
-	imagePath     string  //点选校验图片目录
-	wordFile      string  //点选文字文件
-	wordCount     int     //点选文字个数
-	fontFile      string  //字体文件
-	fontSize      int     //字体大小
-	watermarkText string  //水印信息
-	watermarkSize int     //水印大小
-	dpi           float64 //分辨率
-	expireTime    int     //校验过期时间
+	imagePath     string        //点选校验图片目录
+	wordFile      string        //点选文字文件
+	wordCount     int           //点选文字个数
+	fontFile      string        //字体文件
+	fontSize      int           //字体大小
+	watermarkText string        //水印信息
+	watermarkSize int           //水印大小
+	dpi           float64       //分辨率
+	expireTime    time.Duration //校验过期时间
 }
 
 type FontPoint struct {

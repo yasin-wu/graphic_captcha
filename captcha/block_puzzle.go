@@ -10,22 +10,23 @@ import (
 	"log"
 	"math"
 	"os"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/yasin-wu/captcha/redis"
 )
 
 type BlockPuzzle struct {
-	originalPath  string  //滑块原图目录
-	blockPath     string  //滑块抠图目录
-	threshold     float64 //滑块容忍的偏差范围
-	blur          float64 //滑块空缺的模糊度
-	brightness    float64 //滑块空缺亮度
-	fontFile      string  //字体文件
-	watermarkText string  //水印信息
-	watermarkSize int     //水印大小
-	dpi           float64 //分辨率
-	expireTime    int     //校验过期时间
+	originalPath  string        //滑块原图目录
+	blockPath     string        //滑块抠图目录
+	threshold     float64       //滑块容忍的偏差范围
+	blur          float64       //滑块空缺的模糊度
+	brightness    float64       //滑块空缺亮度
+	fontFile      string        //字体文件
+	watermarkText string        //水印信息
+	watermarkSize int           //水印大小
+	dpi           float64       //分辨率
+	expireTime    time.Duration //校验过期时间
 }
 
 var _ Captcha = (*BlockPuzzle)(nil)
