@@ -29,6 +29,7 @@ type ClickWord struct {
 	watermarkSize int           //水印大小
 	dpi           float64       //分辨率
 	expireTime    time.Duration //校验过期时间
+	redis         *redis.Client
 }
 
 type FontPoint struct {
@@ -99,7 +100,7 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	//saveImage("/Users/yasin/tmp.png", "png", img)
 
 	//校验数据存入Redis,存入时进行base64
-	err = setRedis(token, allDots, this.expireTime)
+	err = this.redis.Set(token, allDots, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +116,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedWord []FontPoint
 	var checkedWord []FontPoint
 	//Redis里面存在的数据
-	cachedBuff, err := getRedis(token)
+	cachedBuff, err := this.redis.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +148,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 		}
 	}
 	//验证后将缓存删除，同一个验证码只能用于验证一次
-	_, err = redis.RedisClient.Exec("DEL", token)
+	err = this.redis.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}

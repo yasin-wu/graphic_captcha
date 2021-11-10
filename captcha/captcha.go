@@ -1,12 +1,8 @@
 package captcha
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"time"
-
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/yasin-wu/captcha/redis"
 	yredis "github.com/yasin-wu/utils/redis"
@@ -52,7 +48,7 @@ func New(captchaType CaptchaType, captchaConf *Config, redisConf *yredis.Config)
 		return nil, errors.New("conf is nil")
 	}
 	checkCaptchaConf(captchaConf)
-	redis.InitRedis(redisConf)
+	redisCli := redis.New(redisConf)
 	switch captchaType {
 	case CaptchaTypeClickWord:
 		return &ClickWord{
@@ -65,6 +61,7 @@ func New(captchaType CaptchaType, captchaConf *Config, redisConf *yredis.Config)
 			watermarkSize: captchaConf.WatermarkSize,
 			dpi:           captchaConf.DPI,
 			expireTime:    captchaConf.ExpireTime,
+			redis:         redisCli,
 		}, nil
 	case CaptchaTypeBlockPuzzle:
 		return &BlockPuzzle{
@@ -78,6 +75,7 @@ func New(captchaType CaptchaType, captchaConf *Config, redisConf *yredis.Config)
 			watermarkSize: captchaConf.WatermarkSize,
 			dpi:           captchaConf.DPI,
 			expireTime:    captchaConf.ExpireTime,
+			redis:         redisCli,
 		}, nil
 	}
 	return nil, errors.New("验证类型错误")
@@ -126,45 +124,4 @@ func checkCaptchaConf(config *Config) {
 	if config.JigsawBrightness == 0 {
 		config.JigsawBrightness = -30
 	}
-}
-
-//校验数据存入Redis,存入时进行base64
-func setRedis(token string, data interface{}, expireTime time.Duration) error {
-	dataBuff, err := json.Marshal(data)
-	if err != nil {
-		return errors.New("json marshal error:" + err.Error())
-	}
-	data64 := base64.StdEncoding.EncodeToString(dataBuff)
-	spew.Dump("数据:" + data64)
-	err = redis.RedisClient.Set(token, data64, expireTime)
-	if err != nil {
-		return errors.New("存储至redis失败")
-	}
-	return nil
-}
-
-//从Redis获取待校验数据,并解base64
-func getRedis(token string) ([]byte, error) {
-	ttl, err := redis.RedisClient.TTL(token)
-	if err != nil {
-		return nil, err
-	}
-	if ttl <= 0 {
-		err = redis.RedisClient.Del(token)
-		return nil, errors.New("验证码已过期，请刷新重试")
-	}
-	cachedBuff, err := redis.RedisClient.Get(token)
-	if err != nil {
-		return nil, errors.New("get captcha error:" + err.Error())
-	}
-	var cachedStr string
-	err = json.Unmarshal(cachedBuff, &cachedStr)
-	if err != nil {
-		return nil, errors.New("json unmarshal error:" + err.Error())
-	}
-	base64Buff, err := base64.StdEncoding.DecodeString(cachedStr)
-	if err != nil {
-		return nil, errors.New("base64 decode error:" + err.Error())
-	}
-	return base64Buff, nil
 }
