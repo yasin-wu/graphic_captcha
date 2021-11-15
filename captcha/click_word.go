@@ -14,22 +14,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yasin-wu/captcha/common"
+
 	"github.com/yasin-wu/captcha/redis"
 
 	"github.com/golang/freetype"
 )
 
 type ClickWord struct {
-	imagePath     string        //点选校验图片目录
-	wordFile      string        //点选文字文件
-	wordCount     int           //点选文字个数
-	fontFile      string        //字体文件
-	fontSize      int           //字体大小
-	watermarkText string        //水印信息
-	watermarkSize int           //水印大小
-	dpi           float64       //分辨率
-	expireTime    time.Duration //校验过期时间
-	redis         *redis.Client
+	imagePath     string
+	wordFile      string
+	wordCount     int
+	fontFile      string
+	fontSize      int
+	watermarkText string
+	watermarkSize int
+	dpi           float64
+	expireTime    time.Duration
+	redisCli      *redis.Client
 }
 
 type FontPoint struct {
@@ -38,22 +40,22 @@ type FontPoint struct {
 	Text string
 }
 
-var _ Captcha = (*ClickWord)(nil)
+var _ Engine = (*ClickWord)(nil)
 
-func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
-	oriImage, err := NewImage(this.imagePath)
+func (this *ClickWord) Get(token string) (*common.Captcha, error) {
+	oriImage, err := common.NewImage(this.imagePath)
 	if err != nil {
 		return nil, errors.New("new image error:" + err.Error())
 	}
 	staticImg := oriImage.Image
 	fileType := oriImage.FileType
-	img := image2RGBA(staticImg)
+	img := common.Image2RGBA(staticImg)
 	if img == nil {
 		return nil, errors.New("image to rgba failed")
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	err = drawText(img, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
+	err = common.DrawText(img, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
@@ -70,53 +72,48 @@ func (this *ClickWord) Get(token string) (*CaptchaVO, error) {
 	if err != nil {
 		return nil, errors.New("randomHanZi error:" + err.Error())
 	}
-	//需要把这个存入Redis作为校验
 	var allDots []FontPoint
-	words := this.randomNoCheck(str)
+	clickWords := this.randomNoCheck(str)
 	fontSize := this.fontSize
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(str); i++ {
 		_w := (width - 24) / len(str)
 		x := i*_w + rand.Intn(_w-fontSize)
 		y := rand.Intn(height - fontSize - fontSize/2)
-		//随机生成字体颜色
 		fontColor := image.NewUniform(color.RGBA{R: uint8(rand.Intn(255)), G: uint8(rand.Intn(255) + 50),
 			B: uint8(rand.Intn(255)), A: uint8(255)})
 		text := fmt.Sprintf("%c", str[i])
-		//随机旋转角度
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		angle := float64(r.Intn(40) - 20)
-		drawTextOnBackground(img, image.Pt(x, y), font, text, fontColor, fontSize, angle)
-		if StringsContains(words, text) {
+		common.DrawTextOnBackground(img, image.Pt(x, y), font, text, fontColor, fontSize, angle)
+		if common.StringsContains(clickWords, text) {
 			allDots = append(allDots, FontPoint{x, y, text})
 		}
 	}
 
-	base64_, err := imgToBase64(img, fileType)
+	base64_, err := common.ImgToBase64(img, fileType)
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
 
 	//saveImage("/Users/yasin/tmp.png", "png", img)
 
-	//校验数据存入Redis,存入时进行base64
-	err = this.redis.Set(token, allDots, this.expireTime)
+	err = this.redisCli.Set(token, allDots, this.expireTime)
 	if err != nil {
 		return nil, err
 	}
-	return &CaptchaVO{
-		OriginalImageBase64: base64_,
-		Words:               words,
-		CaptchaType:         string(CaptchaTypeClickWord),
-		Token:               token,
+	return &common.Captcha{
+		OriImage:   base64_,
+		ClickWords: clickWords,
+		Type:       string(common.CaptchaTypeClickWord),
+		Token:      token,
 	}, nil
 }
 
-func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
+func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 	var cachedWord []FontPoint
 	var checkedWord []FontPoint
-	//Redis里面存在的数据
-	cachedBuff, err := this.redis.Get(token)
+	cachedBuff, err := this.redisCli.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +121,6 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	if err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
-	//待校验数据
 	base64Buff, err := base64.StdEncoding.DecodeString(pointJson)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
@@ -136,7 +132,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	if len(cachedWord) != len(checkedWord) {
 		return nil, errors.New("验证码有误")
 	}
-	success := true
+	status := 200
 	msg := "验证通过"
 	fontSize := this.fontSize
 	for index, word := range cachedWord {
@@ -144,15 +140,14 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
 			((checkedWord)[index].Text == word.Text)) {
 			msg = "验证失败"
-			success = false
+			status = 201
 		}
 	}
-	//验证后将缓存删除，同一个验证码只能用于验证一次
-	err = this.redis.Client.Del(token)
+	err = this.redisCli.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	return &RespMsg{Success: success, Message: msg}, nil
+	return &common.RespMsg{Status: status, Message: msg}, nil
 }
 
 func (this *ClickWord) randomNoCheck(words []rune) []string {

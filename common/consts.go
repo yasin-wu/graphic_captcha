@@ -1,4 +1,4 @@
-package captcha
+package common
 
 type CaptchaType string
 

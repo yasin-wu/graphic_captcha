@@ -5,20 +5,15 @@ import (
 	"time"
 
 	"github.com/yasin-wu/captcha/redis"
+
+	"github.com/yasin-wu/captcha/common"
 	yredis "github.com/yasin-wu/utils/redis"
 )
 
-type CaptchaVO struct {
-	Token               string   `json:"token"`                  //每次验证请求唯一标识
-	CaptchaType         string   `json:"captcha_type"`           //验证码类型:(click_word,block_puzzle)
-	OriginalImageBase64 string   `json:"original_image_base_64"` //原生图片base64
-	JigsawImageBase64   string   `json:"jigsaw_image_base_64"`   //滑块图片base64
-	Words               []string `json:"words"`                  //点选文字
-}
-
-type RespMsg struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
+type Engine interface {
+	Get(token string) (*common.Captcha, error)
+	Check(token, pointJson string) (*common.RespMsg, error)
+	//LoadConfig()
 }
 
 type Config struct {
@@ -38,50 +33,49 @@ type Config struct {
 	ExpireTime         time.Duration //校验过期时间
 }
 
-type Captcha interface {
-	Get(token string) (*CaptchaVO, error)
-	Check(token, pointJson string) (*RespMsg, error)
-}
-
-func New(captchaType CaptchaType, captchaConf *Config, redisConf *yredis.Config) (Captcha, error) {
-	if captchaConf == nil || redisConf == nil {
+func New(captchaType common.CaptchaType, config *Config, host string, options ...yredis.Option) (Engine, error) {
+	if config == nil {
 		return nil, errors.New("conf is nil")
 	}
-	checkCaptchaConf(captchaConf)
-	redisCli := redis.New(redisConf)
+	checkConf(config)
+	redisCli := redis.New(host, options...)
+	if redisCli == nil {
+		return nil, errors.New("redis client is nil")
+	}
 	switch captchaType {
-	case CaptchaTypeClickWord:
+	case common.CaptchaTypeClickWord:
 		return &ClickWord{
-			imagePath:     captchaConf.ClickImagePath,
-			wordFile:      captchaConf.ClickWordFile,
-			wordCount:     captchaConf.ClickWordCount,
-			fontFile:      captchaConf.FontFile,
-			fontSize:      captchaConf.FontSize,
-			watermarkText: captchaConf.WatermarkText,
-			watermarkSize: captchaConf.WatermarkSize,
-			dpi:           captchaConf.DPI,
-			expireTime:    captchaConf.ExpireTime,
-			redis:         redisCli,
+			imagePath:     config.ClickImagePath,
+			wordFile:      config.ClickWordFile,
+			wordCount:     config.ClickWordCount,
+			fontFile:      config.FontFile,
+			fontSize:      config.FontSize,
+			watermarkText: config.WatermarkText,
+			watermarkSize: config.WatermarkSize,
+			dpi:           config.DPI,
+			expireTime:    config.ExpireTime,
+			redisCli:      redisCli,
 		}, nil
-	case CaptchaTypeBlockPuzzle:
-		return &BlockPuzzle{
-			originalPath:  captchaConf.JigsawOriginalPath,
-			blockPath:     captchaConf.JigsawBlockPath,
-			threshold:     captchaConf.JigsawThreshold,
-			blur:          captchaConf.JigsawBlur,
-			brightness:    captchaConf.JigsawBrightness,
-			fontFile:      captchaConf.FontFile,
-			watermarkText: captchaConf.WatermarkText,
-			watermarkSize: captchaConf.WatermarkSize,
-			dpi:           captchaConf.DPI,
-			expireTime:    captchaConf.ExpireTime,
-			redis:         redisCli,
+	case common.CaptchaTypeBlockPuzzle:
+		return &SlideBlock{
+			originalPath:  config.JigsawOriginalPath,
+			blockPath:     config.JigsawBlockPath,
+			threshold:     config.JigsawThreshold,
+			blur:          config.JigsawBlur,
+			brightness:    config.JigsawBrightness,
+			fontFile:      config.FontFile,
+			fontSize:      config.FontSize,
+			watermarkText: config.WatermarkText,
+			watermarkSize: config.WatermarkSize,
+			dpi:           config.DPI,
+			expireTime:    config.ExpireTime,
+			redisCli:      redisCli,
 		}, nil
 	}
 	return nil, errors.New("验证类型错误")
 }
 
-func checkCaptchaConf(config *Config) {
+func checkConf(config *Config) {
 	if config.ClickImagePath == "" {
 		config.ClickImagePath = "../conf/pic_click"
 	}

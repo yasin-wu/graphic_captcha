@@ -1,4 +1,4 @@
-package captcha
+package common
 
 import (
 	"bytes"
@@ -24,7 +24,7 @@ import (
 	"github.com/golang/freetype/truetype"
 )
 
-func randomFileName(dir string) (string, error) {
+func RandomFileName(dir string) (string, error) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return "", err
@@ -47,7 +47,7 @@ func randomFileName(dir string) (string, error) {
 	return fileNames[index], nil
 }
 
-func image2RGBA(oriImg image.Image) *image.RGBA {
+func Image2RGBA(oriImg image.Image) *image.RGBA {
 	if oriImg == nil {
 		return nil
 	}
@@ -59,7 +59,7 @@ func image2RGBA(oriImg image.Image) *image.RGBA {
 	return rgba
 }
 
-func drawText(img *image.RGBA, watermarkText, fontFile string, watermarkSize int, dpi float64) error {
+func DrawText(img *image.RGBA, watermarkText, fontFile string, watermarkSize int, dpi float64) error {
 	watermarkLen := strings.Count(watermarkText, "") - 1
 	pt := image.Pt(img.Bounds().Dx()-(watermarkSize*watermarkLen), img.Bounds().Dy()-watermarkLen)
 	fontColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
@@ -72,14 +72,10 @@ func drawText(img *image.RGBA, watermarkText, fontFile string, watermarkSize int
 		return errors.New("parse font error:" + err.Error())
 	}
 	c := freetype.NewContext()
-	//设置分辨率
 	c.SetDPI(dpi)
-	//设置字体
 	c.SetFont(font)
-	//设置尺寸
 	c.SetFontSize(float64(watermarkSize))
 	c.SetClip(img.Bounds())
-	//设置输出的图片
 	c.SetDst(img)
 	c.SetSrc(image.NewUniform(fontColor))
 	point := freetype.Pt(pt.X, pt.Y)
@@ -96,30 +92,28 @@ func StringsContains(stringArray []string, substr string) bool {
 	return false
 }
 
-func drawTextOnBackground(bg *image.RGBA, pt image.Point, fontStyle *truetype.Font, text string, fontColor color.Color, fontSize int, angle float64) {
-	fontPng := drawString2Png(fontStyle, fontColor, text, float64(fontSize))
+func DrawTextOnBackground(bg *image.RGBA, pt image.Point, fontStyle *truetype.Font, text string, fontColor color.Color, fontSize int, angle float64) {
+	fontPng := DrawString2Png(fontStyle, fontColor, text, float64(fontSize))
 	rotate := imaging.Rotate(fontPng, angle, color.Transparent)
 	resize := imaging.Resize(rotate, fontSize, fontSize, imaging.Lanczos)
-	resizePng := image2RGBA(resize)
+	resizePng := Image2RGBA(resize)
 	draw.Draw(bg, image.Rect(pt.X, pt.Y, pt.X+fontSize, pt.Y+fontSize), resizePng, image.ZP, draw.Over)
 }
 
-func drawString2Png(font *truetype.Font, c color.Color, str string, fontSize float64) *image.RGBA {
+func DrawString2Png(font *truetype.Font, c color.Color, str string, fontSize float64) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, int(fontSize), int(fontSize)))
 	ctx := freetype.NewContext()
-	// default 72dpi
 	ctx.SetDst(img)
 	ctx.SetClip(img.Bounds())
 	ctx.SetSrc(image.NewUniform(c))
 	ctx.SetFontSize(fontSize)
 	ctx.SetFont(font)
-	// 写入文字的位置
 	pt := freetype.Pt(0, int(-fontSize/6)+ctx.PointToFixed(fontSize).Ceil())
 	ctx.DrawString(str, pt)
 	return img
 }
 
-func imgToBase64(img image.Image, fileType string) (string, error) {
+func ImgToBase64(img image.Image, fileType string) (string, error) {
 	var err error
 	emptyBuff := bytes.NewBuffer(nil)
 	switch fileType {
@@ -138,7 +132,7 @@ func imgToBase64(img image.Image, fileType string) (string, error) {
 	return *(*string)(unsafe.Pointer(&baseImage)), nil
 }
 
-func generateJigsawPoint(originalWidth, originalHeight, jigsawWidth, jigsawHeight int) image.Point {
+func GenerateJigsawPoint(originalWidth, originalHeight, jigsawWidth, jigsawHeight int) image.Point {
 	rand.Seed(time.Now().UnixNano())
 	widthDifference := originalWidth - jigsawWidth
 	heightDifference := originalHeight - jigsawHeight
@@ -156,22 +150,21 @@ func generateJigsawPoint(originalWidth, originalHeight, jigsawWidth, jigsawHeigh
 	return image.Point{X: x, Y: y}
 }
 
-func randInt(min, max int) int {
+func RandInt(min, max int) int {
 	if min >= max || min == 0 || max == 0 {
 		return max
 	}
 	return rand.Intn(max-min) + min
 }
 
-func colorTransparent(r, g, b, a uint32) color.RGBA {
+func ColorTransparent(r, g, b, a uint32) color.RGBA {
 	rgba := image.NewRGBA(image.Rect(0, 0, 1, 1))
 	convert := rgba.ColorModel().Convert(color.NRGBA64{R: uint16(r), G: uint16(g), B: uint16(b), A: uint16(a)})
 	rr, gg, bb, aa := convert.RGBA()
 	return color.RGBA{R: uint8(rr), G: uint8(gg), B: uint8(bb), A: uint8(aa)}
 }
 
-//色彩混合
-func colorMix(fg, bg color.RGBA) color.RGBA {
+func ColorMix(fg, bg color.RGBA) color.RGBA {
 	rgba := color.RGBA{}
 	fa := FloatRound(float64(fg.A)/255, 2)
 	ba := FloatRound(float64(bg.A)/255, 2)
@@ -189,7 +182,7 @@ func FloatRound(f float64, n int) float64 {
 	return res
 }
 
-func saveImage(fileName, fileType string, img image.Image) {
+func SaveImage(fileName, fileType string, img image.Image) {
 	var err error
 	tmpFile, err := os.Create(fileName)
 	if err != nil {
@@ -208,7 +201,7 @@ func saveImage(fileName, fileType string, img image.Image) {
 	}
 }
 
-func isFile(path string) bool {
+func IsFile(path string) bool {
 	fi, e := os.Stat(path)
 	if e != nil {
 		return false

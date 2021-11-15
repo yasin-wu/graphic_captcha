@@ -14,22 +14,21 @@ type Client struct {
 	Client *redis.Client
 }
 
-func New(conf *redis.Config) *Client {
-	client, err := redis.New(conf)
+func New(host string, options ...redis.Option) *Client {
+	client, err := redis.New(host, options...)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	return &Client{Client: client}
 }
 
-//校验数据存入Redis,存入时进行base64
 func (this *Client) Set(token string, data interface{}, expireTime time.Duration) error {
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
-	spew.Dump("数据:" + data64)
+	spew.Dump("pointJson:" + data64)
 	err = this.Client.Set(token, data64, expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
@@ -37,7 +36,6 @@ func (this *Client) Set(token string, data interface{}, expireTime time.Duration
 	return nil
 }
 
-//从Redis获取待校验数据,并解base64
 func (this *Client) Get(token string) ([]byte, error) {
 	ttl, err := this.Client.TTL(token)
 	if err != nil {

@@ -1,4 +1,4 @@
-package captcha
+package common
 
 import (
 	"image"
@@ -21,8 +21,8 @@ func NewImage(dir string) (*Image, error) {
 	var fileName string
 	var staticImg image.Image
 	filePath := dir
-	if !isFile(dir) {
-		fileName, err = randomFileName(dir)
+	if !IsFile(dir) {
+		fileName, err = RandomFileName(dir)
 		if err != nil {
 			log.Printf("random file name error: %v", err)
 			return nil, err
