@@ -13,24 +13,23 @@ import (
 type Engine interface {
 	Get(token string) (*common.Captcha, error)
 	Check(token, pointJson string) (*common.RespMsg, error)
-	//LoadConfig()
 }
 
 type Config struct {
-	ClickImagePath     string        //点选校验图片目录
-	ClickWordFile      string        //点选文字文件
-	ClickWordCount     int           //点选文字个数
-	JigsawOriginalPath string        //滑块原图目录
-	JigsawBlockPath    string        //滑块抠图目录
-	JigsawThreshold    float64       //滑块容忍的偏差范围
-	JigsawBlur         float64       //滑块空缺的模糊度
-	JigsawBrightness   float64       //滑块空缺亮度
-	FontFile           string        //字体文件
-	FontSize           int           //字体大小
-	WatermarkText      string        //图片水印
-	WatermarkSize      int           //水印大小
-	DPI                float64       //分辨率
-	ExpireTime         time.Duration //校验过期时间
+	ClickImagePath string
+	ClickWordFile  string
+	ClickWordCount int
+	OriginalPath   string
+	BlockPath      string
+	Threshold      float64
+	Blur           float64
+	Brightness     float64
+	FontFile       string
+	FontSize       int
+	WatermarkText  string
+	WatermarkSize  int
+	DPI            float64
+	ExpireTime     time.Duration
 }
 
 func New(captchaType common.CaptchaType, config *Config, host string, options ...yredis.Option) (Engine, error) {
@@ -58,11 +57,11 @@ func New(captchaType common.CaptchaType, config *Config, host string, options ..
 		}, nil
 	case common.CaptchaTypeBlockPuzzle:
 		return &SlideBlock{
-			originalPath:  config.JigsawOriginalPath,
-			blockPath:     config.JigsawBlockPath,
-			threshold:     config.JigsawThreshold,
-			blur:          config.JigsawBlur,
-			brightness:    config.JigsawBrightness,
+			originalPath:  config.OriginalPath,
+			blockPath:     config.BlockPath,
+			threshold:     config.Threshold,
+			blur:          config.Blur,
+			brightness:    config.Brightness,
 			fontFile:      config.FontFile,
 			fontSize:      config.FontSize,
 			watermarkText: config.WatermarkText,
@@ -103,19 +102,19 @@ func checkConf(config *Config) {
 	if config.ExpireTime == 0 {
 		config.ExpireTime = time.Minute
 	}
-	if config.JigsawOriginalPath == "" {
-		config.JigsawOriginalPath = "../conf/jigsaw/original"
+	if config.OriginalPath == "" {
+		config.OriginalPath = "../conf/jigsaw/original"
 	}
-	if config.JigsawBlockPath == "" {
-		config.JigsawBlockPath = "../conf/jigsaw/sliding_block"
+	if config.BlockPath == "" {
+		config.BlockPath = "../conf/jigsaw/sliding_block"
 	}
-	if config.JigsawThreshold == 0 {
-		config.JigsawThreshold = 8
+	if config.Threshold == 0 {
+		config.Threshold = 8
 	}
-	if config.JigsawBlur == 0 {
-		config.JigsawBlur = 1.3
+	if config.Blur == 0 {
+		config.Blur = 1.3
 	}
-	if config.JigsawBrightness == 0 {
-		config.JigsawBrightness = -30
+	if config.Brightness == 0 {
+		config.Brightness = -30
 	}
 }
