@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yasin-wu/captcha/captcha"
+	"github.com/yasin-wu/graphic_captcha/captcha"
 
-	"github.com/yasin-wu/captcha/common"
+	"github.com/yasin-wu/graphic_captcha/common"
 
 	"github.com/davecgh/go-spew/spew"
 
@@ -19,7 +19,7 @@ var (
 	captchaType = common.CaptchaTypeClickWord
 )
 
-func TestCaptchaGet(t *testing.T) {
+func TestGet(t *testing.T) {
 	c, err := captcha.New(captchaType, "47.108.155.25:6379",
 		captcha.WithRedisOptions(redis.WithPassWord("yasinwu")))
 	if err != nil {
@@ -36,11 +36,11 @@ func TestCaptchaGet(t *testing.T) {
 	spew.Dump("Token:" + cv.Token)
 }
 
-func TestCaptchaCheck(t *testing.T) {
+func TestCheck(t *testing.T) {
 	c, err := captcha.New(captchaType, "47.108.155.25:6379",
 		captcha.WithRedisOptions(redis.WithPassWord("yasinwu")))
-	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNjk1NjkyOCM="
-	pointJson := "W3siWCI6MzMsIlkiOjEwNSwiVGV4dCI6IueVmSJ9LHsiWCI6NzEsIlkiOjYsIlRleHQiOiLlroMifSx7IlgiOjI0MCwiWSI6MzksIlRleHQiOiLlpLEifV0="
+	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNjk2MTc0MSM="
+	pointJson := "W3siWCI6MSwiWSI6NzcsIlQiOiLlv4MifSx7IlgiOjg4LCJZIjoxOSwiVCI6IuaBqSJ9LHsiWCI6MjE0LCJZIjo3MSwiVCI6IuWPryJ9XQ=="
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		fmt.Println(err.Error())

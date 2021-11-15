@@ -3,9 +3,9 @@ package captcha
 import (
 	"errors"
 
-	"github.com/yasin-wu/captcha/redis"
+	"github.com/yasin-wu/graphic_captcha/redis"
 
-	"github.com/yasin-wu/captcha/common"
+	"github.com/yasin-wu/graphic_captcha/common"
 )
 
 type Engine interface {

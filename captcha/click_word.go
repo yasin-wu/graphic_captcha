@@ -14,9 +14,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yasin-wu/captcha/common"
+	"github.com/yasin-wu/graphic_captcha/common"
 
-	"github.com/yasin-wu/captcha/redis"
+	"github.com/yasin-wu/graphic_captcha/redis"
 
 	"github.com/golang/freetype"
 )
@@ -34,10 +34,10 @@ type ClickWord struct {
 	redisCli      *redis.Client
 }
 
-type FontPoint struct {
-	X    int
-	Y    int
-	Text string
+type Point struct {
+	X int
+	Y int
+	T string
 }
 
 var _ Engine = (*ClickWord)(nil)
@@ -72,7 +72,7 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 	if err != nil {
 		return nil, errors.New("randomHanZi error:" + err.Error())
 	}
-	var allDots []FontPoint
+	var allDots []Point
 	clickWords := this.randomNoCheck(str)
 	fontSize := this.fontSize
 	rand.Seed(time.Now().UnixNano())
@@ -87,10 +87,9 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 		angle := float64(r.Intn(40) - 20)
 		common.DrawTextOnBackground(img, image.Pt(x, y), font, text, fontColor, fontSize, angle)
 		if common.StringsContains(clickWords, text) {
-			allDots = append(allDots, FontPoint{x, y, text})
+			allDots = append(allDots, Point{x, y, text})
 		}
 	}
-
 	base64_, err := common.ImgToBase64(img, fileType)
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
@@ -111,8 +110,8 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 }
 
 func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
-	var cachedWord []FontPoint
-	var checkedWord []FontPoint
+	var cachedWord []Point
+	var checkedWord []Point
 	cachedBuff, err := this.redisCli.Get(token)
 	if err != nil {
 		return nil, err
@@ -138,7 +137,7 @@ func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 	for index, word := range cachedWord {
 		if !(((checkedWord)[index].X >= word.X && (checkedWord)[index].X <= word.X+fontSize) &&
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
-			((checkedWord)[index].Text == word.Text)) {
+			((checkedWord)[index].T == word.T)) {
 			msg = "验证失败"
 			status = 201
 		}

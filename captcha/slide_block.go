@@ -12,10 +12,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/yasin-wu/captcha/common"
+	"github.com/yasin-wu/graphic_captcha/common"
 
 	"github.com/disintegration/imaging"
-	"github.com/yasin-wu/captcha/redis"
+	"github.com/yasin-wu/graphic_captcha/redis"
 )
 
 type SlideBlock struct {

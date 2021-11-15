@@ -1,4 +1,4 @@
-module github.com/yasin-wu/captcha
+module github.com/yasin-wu/graphic_captcha
 
 go 1.14
 
