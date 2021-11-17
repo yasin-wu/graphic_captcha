@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/apolloconfig/agollo/v4"
+	"github.com/apolloconfig/agollo/v4/env/config"
+
 	"github.com/yasin-wu/graphic_captcha/captcha"
 
 	"github.com/yasin-wu/graphic_captcha/common"
@@ -20,8 +23,15 @@ var (
 )
 
 func TestGet(t *testing.T) {
-	c, err := captcha.New(captchaType, "47.108.155.25:6379",
-		captcha.WithRedisOptions(redis.WithPassWord("yasinwu")))
+	client, _ := agollo.StartWithConfig(func() (*config.AppConfig, error) {
+		return apolloConf, nil
+	})
+	fmt.Println("初始化Apollo配置成功")
+	cache := client.GetConfigCache(apolloConf.NamespaceName)
+	host, _ := cache.Get("redis.host")
+	password, _ := cache.Get("redis.password")
+	c, err := captcha.New(captchaType, host.(string),
+		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -37,10 +47,17 @@ func TestGet(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	c, err := captcha.New(captchaType, "47.108.155.25:6379",
-		captcha.WithRedisOptions(redis.WithPassWord("yasinwu")))
-	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNjk2MTc0MSM="
-	pointJson := "W3siWCI6MSwiWSI6NzcsIlQiOiLlv4MifSx7IlgiOjg4LCJZIjoxOSwiVCI6IuaBqSJ9LHsiWCI6MjE0LCJZIjo3MSwiVCI6IuWPryJ9XQ=="
+	client, _ := agollo.StartWithConfig(func() (*config.AppConfig, error) {
+		return apolloConf, nil
+	})
+	fmt.Println("初始化Apollo配置成功")
+	cache := client.GetConfigCache(apolloConf.NamespaceName)
+	host, _ := cache.Get("redis.host")
+	password, _ := cache.Get("redis.password")
+	c, err := captcha.New(captchaType, host.(string),
+		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
+	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNzExODA5MyM="
+	pointJson := "W3siWCI6OSwiWSI6OCwiVCI6IuadpSJ9LHsiWCI6MTg0LCJZIjo5MiwiVCI6IuWMliJ9LHsiWCI6MjU0LCJZIjo2LCJUIjoi566hIn1d"
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		fmt.Println(err.Error())
