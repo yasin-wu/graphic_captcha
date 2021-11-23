@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -16,6 +17,10 @@ import (
 
 	"github.com/yasin-wu/utils/redis"
 )
+
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
 
 var (
 	captchaType = common.CaptchaTypeClickWord
@@ -32,15 +37,13 @@ func TestGet(t *testing.T) {
 	c, err := captcha.New(captchaType, host.(string),
 		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
 	if err != nil {
-		t.Error(err.Error())
-		return
+		log.Fatal(err)
 	}
 	token := fmt.Sprintf(common.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
 	cv, err := c.Get(token)
 	if err != nil {
-		t.Error(err.Error())
-		return
+		log.Fatal(err)
 	}
 	fmt.Println("Token:" + cv.Token)
 }
@@ -59,8 +62,7 @@ func TestCheck(t *testing.T) {
 	pointJson := "W3siWCI6MTksIlkiOjY4LCJUIjoi6YCJIn0seyJYIjo4MiwiWSI6NTcsIlQiOiLph4wifSx7IlgiOjE0NCwiWSI6NzUsIlQiOiLopJsifV0="
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
-		t.Error(err.Error())
-		return
+		log.Fatal(err)
 	}
 	resps, _ := json.MarshalIndent(resp, "", "\t")
 	fmt.Println(string(resps))
