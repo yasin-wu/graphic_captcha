@@ -4,9 +4,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/yasin-wu/utils/redis"
 )
 
@@ -28,7 +28,7 @@ func (this *Client) Set(token string, data interface{}, expireTime time.Duration
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
-	spew.Dump("pointJson:" + data64)
+	fmt.Println("pointJson:" + data64)
 	err = this.Client.Set(token, data64, expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")

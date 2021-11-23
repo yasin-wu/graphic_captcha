@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -12,8 +13,6 @@ import (
 	"github.com/yasin-wu/graphic_captcha/captcha"
 
 	"github.com/yasin-wu/graphic_captcha/common"
-
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/yasin-wu/utils/redis"
 )
@@ -33,17 +32,17 @@ func TestGet(t *testing.T) {
 	c, err := captcha.New(captchaType, host.(string),
 		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
 	if err != nil {
-		fmt.Println(err.Error())
+		t.Error(err.Error())
 		return
 	}
 	token := fmt.Sprintf(common.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
 	cv, err := c.Get(token)
 	if err != nil {
-		fmt.Println(err.Error())
+		t.Error(err.Error())
 		return
 	}
-	spew.Dump("Token:" + cv.Token)
+	fmt.Println("Token:" + cv.Token)
 }
 
 func TestCheck(t *testing.T) {
@@ -56,12 +55,13 @@ func TestCheck(t *testing.T) {
 	password, _ := cache.Get("redis.password")
 	c, err := captcha.New(captchaType, host.(string),
 		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
-	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNzExODA5MyM="
-	pointJson := "W3siWCI6OSwiWSI6OCwiVCI6IuadpSJ9LHsiWCI6MTg0LCJZIjo5MiwiVCI6IuWMliJ9LHsiWCI6MjU0LCJZIjo2LCJUIjoi566hIn1d"
+	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTYzNzY0Nzk4NiM="
+	pointJson := "W3siWCI6MTksIlkiOjY4LCJUIjoi6YCJIn0seyJYIjo4MiwiWSI6NTcsIlQiOiLph4wifSx7IlgiOjE0NCwiWSI6NzUsIlQiOiLopJsifV0="
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
-		fmt.Println(err.Error())
+		t.Error(err.Error())
 		return
 	}
-	spew.Dump(resp)
+	resps, _ := json.MarshalIndent(resp, "", "\t")
+	fmt.Println(string(resps))
 }
