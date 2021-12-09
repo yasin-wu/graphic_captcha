@@ -3,6 +3,7 @@ package captcha
 import (
 	"time"
 
+	redis2 "github.com/yasin-wu/graphic_captcha/redis"
 	"github.com/yasin-wu/utils/redis"
 )
 
@@ -24,6 +25,7 @@ type config struct {
 	dpi            float64
 	redisOptions   []redis.Option
 	expireTime     time.Duration
+	redisCli       *redis2.Client
 }
 
 func WithClickImagePath(path string) Option {

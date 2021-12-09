@@ -26,35 +26,12 @@ func New(captchaType common.CaptchaType, redisHost string, options ...Option) (E
 	if redisCli == nil {
 		return nil, errors.New("redis client is nil")
 	}
+	conf.redisCli = redisCli
 	switch captchaType {
 	case common.CaptchaTypeClickWord:
-		return &ClickWord{
-			imagePath:     conf.clickImagePath,
-			wordFile:      conf.clickWordFile,
-			wordCount:     conf.clickWordCount,
-			fontFile:      conf.fontFile,
-			fontSize:      conf.fontSize,
-			watermarkText: conf.watermarkText,
-			watermarkSize: conf.watermarkSize,
-			dpi:           conf.dpi,
-			expireTime:    conf.expireTime,
-			redisCli:      redisCli,
-		}, nil
+		return &ClickWord{conf: conf}, nil
 	case common.CaptchaTypeBlockPuzzle:
-		return &SlideBlock{
-			originalPath:  conf.originalPath,
-			blockPath:     conf.blockPath,
-			threshold:     conf.threshold,
-			blur:          conf.blur,
-			brightness:    conf.brightness,
-			fontFile:      conf.fontFile,
-			fontSize:      conf.fontSize,
-			watermarkText: conf.watermarkText,
-			watermarkSize: conf.watermarkSize,
-			dpi:           conf.dpi,
-			expireTime:    conf.expireTime,
-			redisCli:      redisCli,
-		}, nil
+		return &SlideBlock{conf: conf}, nil
 	}
 	return nil, errors.New("验证类型错误")
 }

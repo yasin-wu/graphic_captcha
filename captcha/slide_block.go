@@ -10,37 +10,24 @@ import (
 	"log"
 	"math"
 	"os"
-	"time"
 
 	"github.com/yasin-wu/graphic_captcha/common"
 
 	"github.com/disintegration/imaging"
-	"github.com/yasin-wu/graphic_captcha/redis"
 )
 
 type SlideBlock struct {
-	originalPath  string
-	blockPath     string
-	threshold     float64
-	blur          float64
-	brightness    float64
-	fontFile      string
-	fontSize      int
-	watermarkText string
-	watermarkSize int
-	dpi           float64
-	expireTime    time.Duration
-	redisCli      *redis.Client
+	conf *config
 }
 
 var _ Engine = (*SlideBlock)(nil)
 
 func (this *SlideBlock) Get(token string) (*common.Captcha, error) {
-	oriImg, err := common.NewImage(this.originalPath)
+	oriImg, err := common.NewImage(this.conf.originalPath)
 	if err != nil {
 		return nil, err
 	}
-	blockImg, err := common.NewImage(this.blockPath)
+	blockImg, err := common.NewImage(this.conf.blockPath)
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +35,14 @@ func (this *SlideBlock) Get(token string) (*common.Captcha, error) {
 	blockWidth := blockImg.Image.Bounds().Dx()
 	blockHeight := blockImg.Image.Bounds().Dy()
 	point := common.GenerateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
-	err = common.DrawText(oriRGBA, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
+	err = common.DrawText(oriRGBA, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
 	if err != nil {
 		return nil, err
 	}
 	this.interfereBlock(oriRGBA, point, blockImg.FileName)
 	jigsaw := this.cropJigsaw(blockImg.Image, oriImg.Image, point)
-	blur := imaging.Blur(jigsaw, this.blur)
-	blur = imaging.AdjustBrightness(blur, this.brightness)
+	blur := imaging.Blur(jigsaw, this.conf.blur)
+	blur = imaging.AdjustBrightness(blur, this.conf.brightness)
 	blurRGB := common.Image2RGBA(blur)
 
 	newImage := image.NewRGBA(blockImg.Image.Bounds())
@@ -95,7 +82,7 @@ func (this *SlideBlock) Get(token string) (*common.Captcha, error) {
 	//saveImage("/Users/yasin/tmp.png", "png", oriRGBA)
 	//saveImage("/Users/yasin/block.png", "png", newImage)
 
-	err = this.redisCli.Set(token, point, this.expireTime)
+	err = this.conf.redisCli.Set(token, point, this.conf.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +98,7 @@ func (this *SlideBlock) Check(token, pointJson string) (*common.RespMsg, error) 
 	var cachedPoint image.Point
 	var checkedPoint image.Point
 
-	cachedBuff, err := this.redisCli.Get(token)
+	cachedBuff, err := this.conf.redisCli.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +117,13 @@ func (this *SlideBlock) Check(token, pointJson string) (*common.RespMsg, error) 
 
 	status := 201
 	msg := "验证失败"
-	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= this.threshold) &&
-		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= this.threshold) {
+	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= this.conf.threshold) &&
+		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= this.conf.threshold) {
 		status = 200
 		msg = "验证通过"
 	}
 
-	err = this.redisCli.Client.Del(token)
+	err = this.conf.redisCli.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
@@ -144,7 +131,7 @@ func (this *SlideBlock) Check(token, pointJson string) (*common.RespMsg, error) 
 }
 
 func (this *SlideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {
-	blockPath := this.blockPath
+	blockPath := this.conf.blockPath
 	var blockName1 string
 	for {
 		blockName1, _ = common.RandomFileName(blockPath)
@@ -190,8 +177,8 @@ func (this *SlideBlock) doInterfere(blockFileName string, img *image.RGBA, point
 	}
 	point = blockImg.Bounds().Min.Sub(image.Pt(-position, 0))
 	jigsaw := this.cropJigsaw(blockImg, img, point)
-	blur := imaging.Blur(jigsaw, this.blur)
-	blur = imaging.AdjustBrightness(blur, this.brightness)
+	blur := imaging.Blur(jigsaw, this.conf.blur)
+	blur = imaging.AdjustBrightness(blur, this.conf.brightness)
 	blurRGB := common.Image2RGBA(blur)
 
 	for x := 0; x < blockImg.Bounds().Dx(); x++ {

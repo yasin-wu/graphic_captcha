@@ -16,22 +16,11 @@ import (
 
 	"github.com/yasin-wu/graphic_captcha/common"
 
-	"github.com/yasin-wu/graphic_captcha/redis"
-
 	"github.com/golang/freetype"
 )
 
 type ClickWord struct {
-	imagePath     string
-	wordFile      string
-	wordCount     int
-	fontFile      string
-	fontSize      int
-	watermarkText string
-	watermarkSize int
-	dpi           float64
-	expireTime    time.Duration
-	redisCli      *redis.Client
+	conf *config
 }
 
 type Point struct {
@@ -43,7 +32,7 @@ type Point struct {
 var _ Engine = (*ClickWord)(nil)
 
 func (this *ClickWord) Get(token string) (*common.Captcha, error) {
-	oriImage, err := common.NewImage(this.imagePath)
+	oriImage, err := common.NewImage(this.conf.clickImagePath)
 	if err != nil {
 		return nil, errors.New("new image error:" + err.Error())
 	}
@@ -55,12 +44,12 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	err = common.DrawText(img, this.watermarkText, this.fontFile, this.watermarkSize, this.dpi)
+	err = common.DrawText(img, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
 
-	fontBytes, err := ioutil.ReadFile(this.fontFile)
+	fontBytes, err := ioutil.ReadFile(this.conf.fontFile)
 	if err != nil {
 		return nil, errors.New("read font file error:" + err.Error())
 	}
@@ -74,7 +63,7 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 	}
 	var allDots []Point
 	clickWords := this.randomNoCheck(str)
-	fontSize := this.fontSize
+	fontSize := this.conf.fontSize
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(str); i++ {
 		_w := (width - 24) / len(str)
@@ -97,7 +86,7 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 
 	//saveImage("/Users/yasin/tmp.png", "png", img)
 
-	err = this.redisCli.Set(token, allDots, this.expireTime)
+	err = this.conf.redisCli.Set(token, allDots, this.conf.expireTime)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +101,7 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 	var cachedWord []Point
 	var checkedWord []Point
-	cachedBuff, err := this.redisCli.Get(token)
+	cachedBuff, err := this.conf.redisCli.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +122,7 @@ func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 	}
 	status := 200
 	msg := "验证通过"
-	fontSize := this.fontSize
+	fontSize := this.conf.fontSize
 	for index, word := range cachedWord {
 		if !(((checkedWord)[index].X >= word.X && (checkedWord)[index].X <= word.X+fontSize) &&
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
@@ -142,7 +131,7 @@ func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 			status = 201
 		}
 	}
-	err = this.redisCli.Client.Del(token)
+	err = this.conf.redisCli.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
@@ -151,7 +140,7 @@ func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 
 func (this *ClickWord) randomNoCheck(words []rune) []string {
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(this.wordCount)
+	index := rand.Intn(this.conf.clickWordCount)
 	var result []string
 	for i, v := range words {
 		if i == index {
@@ -170,7 +159,7 @@ func (this *ClickWord) randomHanZi() ([]rune, error) {
 	wordRunes := []rune(words)
 	var result []rune
 	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < this.wordCount; i++ {
+	for i := 0; i < this.conf.clickWordCount; i++ {
 		index := rand.Intn(len(wordRunes))
 		result = append(result, wordRunes[index])
 	}
@@ -178,7 +167,7 @@ func (this *ClickWord) randomHanZi() ([]rune, error) {
 }
 
 func (this *ClickWord) initWords() (string, error) {
-	license, err := os.Open(this.wordFile)
+	license, err := os.Open(this.conf.clickWordFile)
 	if err != nil {
 		return "", err
 	}
