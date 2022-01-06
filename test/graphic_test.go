@@ -58,8 +58,8 @@ func TestCheck(t *testing.T) {
 	password, _ := cache.Get("redis.password")
 	c, err := captcha.New(captchaType, host.(string),
 		captcha.WithRedisOptions(redis.WithPassWord(password.(string))))
-	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjM5MDE0MDk4Iw=="
-	pointJson := "eyJYIjoyMDksIlkiOjV9"
+	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjQxNDUzMzExIw=="
+	pointJson := "eyJYIjoxMTEsIlkiOjV9"
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		log.Fatal(err)
