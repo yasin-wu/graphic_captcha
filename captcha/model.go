@@ -1,4 +1,4 @@
-package common
+package captcha
 
 type Captcha struct {
 	Token       string   `json:"token"`

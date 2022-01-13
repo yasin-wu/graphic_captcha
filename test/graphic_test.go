@@ -10,8 +10,6 @@ import (
 
 	"github.com/yasin-wu/graphic_captcha/captcha"
 
-	"github.com/yasin-wu/graphic_captcha/common"
-
 	"github.com/yasin-wu/utils/redis"
 )
 
@@ -20,7 +18,7 @@ func init() {
 }
 
 var (
-	captchaType = common.CaptchaTypeBlockPuzzle
+	captchaType = captcha.CaptchaTypeBlockPuzzle
 	host        = "47.108.155.25:6379"
 	password    = "yasinwu"
 )
@@ -32,7 +30,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	token := fmt.Sprintf(common.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
+	token := fmt.Sprintf(captcha.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
 	cv, err := c.Get(token)
 	if err != nil {
@@ -44,8 +42,8 @@ func TestGet(t *testing.T) {
 func TestCheck(t *testing.T) {
 	c, err := captcha.New(captchaType, host,
 		captcha.WithRedisOptions(redis.WithPassWord(password)))
-	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjQxNDUzMzExIw=="
-	pointJson := "eyJYIjoxMTEsIlkiOjV9"
+	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjQyMDU1MDk0Iw=="
+	pointJson := "eyJYIjoxNDEsIlkiOjV9"
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		log.Fatal(err)

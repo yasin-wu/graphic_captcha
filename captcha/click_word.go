@@ -14,15 +14,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yasin-wu/graphic_captcha/common"
-
 	"github.com/golang/freetype"
 )
 
+/**
+ * @author: yasin
+ * @date: 2022/1/13 14:05
+ * @description: 文字点选验证
+ */
 type ClickWord struct {
 	conf *config
 }
 
+/**
+ * @author: yasin
+ * @date: 2022/1/13 14:05
+ * @description: 文字坐标
+ */
 type Point struct {
 	X int
 	Y int
@@ -31,20 +39,27 @@ type Point struct {
 
 var _ Engine = (*ClickWord)(nil)
 
-func (this *ClickWord) Get(token string) (*common.Captcha, error) {
-	oriImage, err := common.NewImage(this.conf.clickImagePath)
+/**
+ * @author: yasin
+ * @date: 2022/1/13 14:06
+ * @params: token string
+ * @return: *common.Captcha, error
+ * @description: 获取文字点选待验证信息
+ */
+func (this *ClickWord) Get(token string) (*Captcha, error) {
+	oriImage, err := newImage(this.conf.clickImagePath)
 	if err != nil {
 		return nil, errors.New("new image error:" + err.Error())
 	}
 	staticImg := oriImage.Image
 	fileType := oriImage.FileType
-	img := common.Image2RGBA(staticImg)
+	img := image2RGBA(staticImg)
 	if img == nil {
 		return nil, errors.New("image to rgba failed")
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	err = common.DrawText(img, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
+	err = drawText(img, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
@@ -74,12 +89,12 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 		text := fmt.Sprintf("%c", str[i])
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		angle := float64(r.Intn(40) - 20)
-		common.DrawTextOnBackground(img, image.Pt(x, y), font, text, fontColor, fontSize, angle)
-		if common.StringsContains(clickWords, text) {
+		drawTextOnBackground(img, image.Pt(x, y), font, text, fontColor, fontSize, angle)
+		if stringsContains(clickWords, text) {
 			allDots = append(allDots, Point{x, y, text})
 		}
 	}
-	base64_, err := common.ImgToBase64(img, fileType)
+	base64_, err := image2Base64(img, fileType)
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
@@ -90,15 +105,22 @@ func (this *ClickWord) Get(token string) (*common.Captcha, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &common.Captcha{
+	return &Captcha{
 		OriImage:   base64_,
 		ClickWords: clickWords,
-		Type:       string(common.CaptchaTypeClickWord),
+		Type:       string(CaptchaTypeClickWord),
 		Token:      token,
 	}, nil
 }
 
-func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
+/**
+ * @author: yasin
+ * @date: 2022/1/13 14:06
+ * @params: token, pointJson string;pointJson为point base64后数据
+ * @return: *common.RespMsg, error
+ * @description: 校验用户操作结果
+ */
+func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedWord []Point
 	var checkedWord []Point
 	cachedBuff, err := this.conf.redisCli.Get(token)
@@ -135,7 +157,7 @@ func (this *ClickWord) Check(token, pointJson string) (*common.RespMsg, error) {
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	return &common.RespMsg{Status: status, Message: msg}, nil
+	return &RespMsg{Status: status, Message: msg}, nil
 }
 
 func (this *ClickWord) randomNoCheck(words []rune) []string {
