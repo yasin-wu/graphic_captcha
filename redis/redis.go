@@ -22,30 +22,30 @@ func New(host string, options ...redis.Option) *Client {
 	return &Client{Client: client}
 }
 
-func (this *Client) Set(token string, data interface{}, expireTime time.Duration) error {
+func (c *Client) Set(token string, data interface{}, expireTime time.Duration) error {
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
 	fmt.Println("pointJson:" + data64)
-	err = this.Client.Set(token, data64, expireTime)
+	err = c.Client.Set(token, data64, expireTime)
 	if err != nil {
 		return errors.New("存储至redis失败")
 	}
 	return nil
 }
 
-func (this *Client) Get(token string) ([]byte, error) {
-	ttl, err := this.Client.TTL(token)
+func (c *Client) Get(token string) ([]byte, error) {
+	ttl, err := c.Client.TTL(token)
 	if err != nil {
 		return nil, err
 	}
 	if ttl <= 0 {
-		err = this.Client.Del(token)
+		err = c.Client.Del(token)
 		return nil, errors.New("验证码已过期，请刷新重试")
 	}
-	cachedBuff, err := this.Client.Get(token)
+	cachedBuff, err := c.Client.Get(token)
 	if err != nil {
 		return nil, errors.New("get captcha error:" + err.Error())
 	}

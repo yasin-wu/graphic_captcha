@@ -111,11 +111,11 @@ func (s *SlideBlock) Get(token string) (*Captcha, error) {
  * @return: *common.RespMsg, error
  * @description: 校验用户操作结果
  */
-func (this *SlideBlock) Check(token, pointJson string) (*RespMsg, error) {
+func (s *SlideBlock) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedPoint image.Point
 	var checkedPoint image.Point
 
-	cachedBuff, err := this.conf.redisCli.Get(token)
+	cachedBuff, err := s.conf.redisCli.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -134,21 +134,21 @@ func (this *SlideBlock) Check(token, pointJson string) (*RespMsg, error) {
 
 	status := 201
 	msg := "验证失败"
-	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= this.conf.threshold) &&
-		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= this.conf.threshold) {
+	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= s.conf.threshold) &&
+		(math.Abs(float64(cachedPoint.Y-checkedPoint.Y)) <= s.conf.threshold) {
 		status = 200
 		msg = "验证通过"
 	}
 
-	err = this.conf.redisCli.Client.Del(token)
+	err = s.conf.redisCli.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
 	return &RespMsg{Status: status, Message: msg}, nil
 }
 
-func (this *SlideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {
-	blockPath := this.conf.blockPath
+func (s *SlideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {
+	blockPath := s.conf.blockPath
 	var blockName1 string
 	for {
 		blockName1, _ = randomFileName(blockPath)
@@ -157,7 +157,7 @@ func (this *SlideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBl
 		}
 	}
 	blockFileName1 := blockPath + "/" + blockName1
-	this.doInterfere(blockFileName1, img, point, 1)
+	s.doInterfere(blockFileName1, img, point, 1)
 
 	var blockName2 string
 	for {
@@ -167,10 +167,10 @@ func (this *SlideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBl
 		}
 	}
 	blockFileName2 := blockPath + "/" + blockName2
-	this.doInterfere(blockFileName2, img, point, 2)
+	s.doInterfere(blockFileName2, img, point, 2)
 }
 
-func (this *SlideBlock) doInterfere(blockFileName string, img *image.RGBA, point image.Point, _type int) {
+func (s *SlideBlock) doInterfere(blockFileName string, img *image.RGBA, point image.Point, _type int) {
 	blockFile, err := os.Open(blockFileName)
 	if err != nil {
 		log.Printf("open file error: %v", err)
@@ -193,9 +193,9 @@ func (this *SlideBlock) doInterfere(blockFileName string, img *image.RGBA, point
 		position = randInt(jigsawWidth, 100-jigsawWidth)
 	}
 	point = blockImg.Bounds().Min.Sub(image.Pt(-position, 0))
-	jigsaw := this.cropJigsaw(blockImg, img, point)
-	blur := imaging.Blur(jigsaw, this.conf.blur)
-	blur = imaging.AdjustBrightness(blur, this.conf.brightness)
+	jigsaw := s.cropJigsaw(blockImg, img, point)
+	blur := imaging.Blur(jigsaw, s.conf.blur)
+	blur = imaging.AdjustBrightness(blur, s.conf.brightness)
 	blurRGB := image2RGBA(blur)
 
 	for x := 0; x < blockImg.Bounds().Dx(); x++ {
@@ -220,7 +220,7 @@ func (this *SlideBlock) doInterfere(blockFileName string, img *image.RGBA, point
 	}
 }
 
-func (this *SlideBlock) cropJigsaw(blockImg, oriImg image.Image, point image.Point) *image.RGBA {
+func (s *SlideBlock) cropJigsaw(blockImg, oriImg image.Image, point image.Point) *image.RGBA {
 	newImage := image.NewRGBA(blockImg.Bounds())
 	for x := 0; x < blockImg.Bounds().Dx(); x++ {
 		for y := 0; y < blockImg.Bounds().Dy(); y++ {

@@ -120,10 +120,10 @@ func (c *ClickWord) Get(token string) (*Captcha, error) {
  * @return: *common.RespMsg, error
  * @description: 校验用户操作结果
  */
-func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
+func (c *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	var cachedWord []Point
 	var checkedWord []Point
-	cachedBuff, err := this.conf.redisCli.Get(token)
+	cachedBuff, err := c.conf.redisCli.Get(token)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 	}
 	status := 200
 	msg := "验证通过"
-	fontSize := this.conf.fontSize
+	fontSize := c.conf.fontSize
 	for index, word := range cachedWord {
 		if !(((checkedWord)[index].X >= word.X && (checkedWord)[index].X <= word.X+fontSize) &&
 			((checkedWord)[index].Y >= word.Y && (checkedWord)[index].Y <= word.Y+fontSize) &&
@@ -153,16 +153,16 @@ func (this *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 			status = 201
 		}
 	}
-	err = this.conf.redisCli.Client.Del(token)
+	err = c.conf.redisCli.Client.Del(token)
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
 	return &RespMsg{Status: status, Message: msg}, nil
 }
 
-func (this *ClickWord) randomNoCheck(words []rune) []string {
+func (c *ClickWord) randomNoCheck(words []rune) []string {
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(this.conf.clickWordCount)
+	index := rand.Intn(c.conf.clickWordCount)
 	var result []string
 	for i, v := range words {
 		if i == index {
@@ -173,23 +173,23 @@ func (this *ClickWord) randomNoCheck(words []rune) []string {
 	return result
 }
 
-func (this *ClickWord) randomHanZi() ([]rune, error) {
-	words, err := this.initWords()
+func (c *ClickWord) randomHanZi() ([]rune, error) {
+	words, err := c.initWords()
 	if err != nil {
 		return nil, err
 	}
 	wordRunes := []rune(words)
 	var result []rune
 	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < this.conf.clickWordCount; i++ {
+	for i := 0; i < c.conf.clickWordCount; i++ {
 		index := rand.Intn(len(wordRunes))
 		result = append(result, wordRunes[index])
 	}
 	return result, nil
 }
 
-func (this *ClickWord) initWords() (string, error) {
-	license, err := os.Open(this.conf.clickWordFile)
+func (c *ClickWord) initWords() (string, error) {
+	license, err := os.Open(c.conf.clickWordFile)
 	if err != nil {
 		return "", err
 	}
