@@ -8,7 +8,7 @@ import (
 )
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @description: 验证器配置项选择器
  */
@@ -34,7 +34,7 @@ type config struct {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: path string
  * @return: Option
@@ -47,7 +47,7 @@ func WithClickImagePath(path string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: file string
  * @return: Option
@@ -60,7 +60,7 @@ func WithClickWordFile(file string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: count int
  * @return: Option
@@ -73,7 +73,7 @@ func WithClickWordCount(count int) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: path string
  * @return: Option
@@ -86,7 +86,7 @@ func WithOriginalPath(path string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: path string
  * @return: Option
@@ -99,7 +99,7 @@ func WithBlockPath(path string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: threshold float64
  * @return: Option
@@ -112,7 +112,7 @@ func WithThreshold(threshold float64) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: blur float64
  * @return: Option
@@ -125,7 +125,7 @@ func WithBlur(blur float64) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: brightness float64
  * @return: Option
@@ -138,7 +138,7 @@ func WithBrightness(brightness float64) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: file string
  * @return: Option
@@ -151,7 +151,7 @@ func WithFontFile(file string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: size int
  * @return: Option
@@ -164,7 +164,7 @@ func WithFontSize(size int) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: text string
  * @return: Option
@@ -177,7 +177,7 @@ func WithWatermarkText(text string) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: size int
  * @return: Option
@@ -190,7 +190,7 @@ func WithWatermarkSize(size int) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: dpi float64
  * @return: Option
@@ -203,7 +203,7 @@ func WithDPI(dpi float64) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:08
  * @params: options ...redis.Option
  * @return: Option
@@ -216,7 +216,7 @@ func WithRedisOptions(options ...redis.Option) Option {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:14
  * @params: expireTime time.Duration
  * @return: Option

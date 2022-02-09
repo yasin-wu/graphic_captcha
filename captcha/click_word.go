@@ -18,7 +18,7 @@ import (
 )
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:05
  * @description: 文字点选验证
  */
@@ -27,7 +27,7 @@ type ClickWord struct {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:05
  * @description: 文字坐标
  */
@@ -40,7 +40,7 @@ type Point struct {
 var _ Engine = (*ClickWord)(nil)
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:06
  * @params: token string
  * @return: *common.Captcha, error
@@ -114,7 +114,7 @@ func (c *ClickWord) Get(token string) (*Captcha, error) {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:06
  * @params: token, pointJson string;pointJson为point base64后数据
  * @return: *common.RespMsg, error

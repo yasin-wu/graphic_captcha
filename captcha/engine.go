@@ -7,13 +7,13 @@ import (
 )
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:16
  * @description: 验证器
  */
 type Engine interface {
 	/**
-	 * @author: yasin
+	 * @author: yasinWu
 	 * @date: 2022/1/13 14:17
 	 * @params: token string
 	 * @return: *common.Captcha, error
@@ -21,7 +21,7 @@ type Engine interface {
 	 */
 	Get(token string) (*Captcha, error)
 	/**
-	 * @author: yasin
+	 * @author: yasinWu
 	 * @date: 2022/1/13 14:17
 	 * @params: token, pointJson string
 	 * @return: *common.RespMsg, error
@@ -31,7 +31,7 @@ type Engine interface {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:18
  * @params: captchaType common.CaptchaType, redisHost string, options ...Option
  * @return: Engine, error

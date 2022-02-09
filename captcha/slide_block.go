@@ -15,7 +15,7 @@ import (
 )
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:19
  * @description: 滑块验证
  */
@@ -26,7 +26,7 @@ type SlideBlock struct {
 var _ Engine = (*SlideBlock)(nil)
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:19
  * @params: token string
  * @return: *common.Captcha, error
@@ -105,7 +105,7 @@ func (s *SlideBlock) Get(token string) (*Captcha, error) {
 }
 
 /**
- * @author: yasin
+ * @author: yasinWu
  * @date: 2022/1/13 14:20
  * @params: token, pointJson string;pointJson为滑块图片base64值
  * @return: *common.RespMsg, error
