@@ -46,8 +46,8 @@ var _ Engine = (*ClickWord)(nil)
  * @return: *common.Captcha, error
  * @description: 获取文字点选待验证信息
  */
-func (this *ClickWord) Get(token string) (*Captcha, error) {
-	oriImage, err := newImage(this.conf.clickImagePath)
+func (c *ClickWord) Get(token string) (*Captcha, error) {
+	oriImage, err := newImage(c.conf.clickImagePath)
 	if err != nil {
 		return nil, errors.New("new image error:" + err.Error())
 	}
@@ -59,12 +59,12 @@ func (this *ClickWord) Get(token string) (*Captcha, error) {
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	err = drawText(img, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
+	err = drawText(img, c.conf.watermarkText, c.conf.fontFile, c.conf.watermarkSize, c.conf.dpi)
 	if err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
 
-	fontBytes, err := ioutil.ReadFile(this.conf.fontFile)
+	fontBytes, err := ioutil.ReadFile(c.conf.fontFile)
 	if err != nil {
 		return nil, errors.New("read font file error:" + err.Error())
 	}
@@ -72,13 +72,13 @@ func (this *ClickWord) Get(token string) (*Captcha, error) {
 	if err != nil {
 		return nil, errors.New("parse font error:" + err.Error())
 	}
-	str, err := this.randomHanZi()
+	str, err := c.randomHanZi()
 	if err != nil {
 		return nil, errors.New("randomHanZi error:" + err.Error())
 	}
 	var allDots []Point
-	clickWords := this.randomNoCheck(str)
-	fontSize := this.conf.fontSize
+	clickWords := c.randomNoCheck(str)
+	fontSize := c.conf.fontSize
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(str); i++ {
 		_w := (width - 24) / len(str)
@@ -101,7 +101,7 @@ func (this *ClickWord) Get(token string) (*Captcha, error) {
 
 	//saveImage("/Users/yasin/tmp.png", "png", img)
 
-	err = this.conf.redisCli.Set(token, allDots, this.conf.expireTime)
+	err = c.conf.redisCli.Set(token, allDots, c.conf.expireTime)
 	if err != nil {
 		return nil, err
 	}

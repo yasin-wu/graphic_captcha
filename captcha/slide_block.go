@@ -32,12 +32,12 @@ var _ Engine = (*SlideBlock)(nil)
  * @return: *common.Captcha, error
  * @description: 获取滑块待验证信息
  */
-func (this *SlideBlock) Get(token string) (*Captcha, error) {
-	oriImg, err := newImage(this.conf.originalPath)
+func (s *SlideBlock) Get(token string) (*Captcha, error) {
+	oriImg, err := newImage(s.conf.originalPath)
 	if err != nil {
 		return nil, err
 	}
-	blockImg, err := newImage(this.conf.blockPath)
+	blockImg, err := newImage(s.conf.blockPath)
 	if err != nil {
 		return nil, err
 	}
@@ -45,14 +45,14 @@ func (this *SlideBlock) Get(token string) (*Captcha, error) {
 	blockWidth := blockImg.Image.Bounds().Dx()
 	blockHeight := blockImg.Image.Bounds().Dy()
 	point := generateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
-	err = drawText(oriRGBA, this.conf.watermarkText, this.conf.fontFile, this.conf.watermarkSize, this.conf.dpi)
+	err = drawText(oriRGBA, s.conf.watermarkText, s.conf.fontFile, s.conf.watermarkSize, s.conf.dpi)
 	if err != nil {
 		return nil, err
 	}
-	this.interfereBlock(oriRGBA, point, blockImg.FileName)
-	jigsaw := this.cropJigsaw(blockImg.Image, oriImg.Image, point)
-	blur := imaging.Blur(jigsaw, this.conf.blur)
-	blur = imaging.AdjustBrightness(blur, this.conf.brightness)
+	s.interfereBlock(oriRGBA, point, blockImg.FileName)
+	jigsaw := s.cropJigsaw(blockImg.Image, oriImg.Image, point)
+	blur := imaging.Blur(jigsaw, s.conf.blur)
+	blur = imaging.AdjustBrightness(blur, s.conf.brightness)
 	blurRGB := image2RGBA(blur)
 
 	newImage := image.NewRGBA(blockImg.Image.Bounds())
@@ -92,7 +92,7 @@ func (this *SlideBlock) Get(token string) (*Captcha, error) {
 	//saveImage("/Users/yasin/tmp.png", "png", oriRGBA)
 	//saveImage("/Users/yasin/block.png", "png", newImage)
 
-	err = this.conf.redisCli.Set(token, point, this.conf.expireTime)
+	err = s.conf.redisCli.Set(token, point, s.conf.expireTime)
 	if err != nil {
 		return nil, err
 	}
