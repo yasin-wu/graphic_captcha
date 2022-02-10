@@ -153,7 +153,7 @@ func (c *ClickWord) Check(token, pointJson string) (*RespMsg, error) {
 			status = 201
 		}
 	}
-	err = c.conf.redisCli.Client.Del(token)
+	err = c.conf.redisCli.client.Del(c.conf.redisCli.ctx, token).Err()
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}

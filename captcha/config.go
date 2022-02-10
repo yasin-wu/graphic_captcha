@@ -2,9 +2,6 @@ package captcha
 
 import (
 	"time"
-
-	redis2 "github.com/yasin-wu/graphic_captcha/redis"
-	"github.com/yasin-wu/utils/redis"
 )
 
 /**
@@ -28,9 +25,8 @@ type config struct {
 	watermarkText  string
 	watermarkSize  int
 	dpi            float64
-	redisOptions   []redis.Option
 	expireTime     time.Duration
-	redisCli       *redis2.Client
+	redisCli       *RedisClient
 }
 
 /**
@@ -199,19 +195,6 @@ func WithWatermarkSize(size int) Option {
 func WithDPI(dpi float64) Option {
 	return func(config *config) {
 		config.dpi = dpi
-	}
-}
-
-/**
- * @author: yasinWu
- * @date: 2022/1/13 14:08
- * @params: options ...redis.Option
- * @return: Option
- * @description: 配置Redis
- */
-func WithRedisOptions(options ...redis.Option) Option {
-	return func(config *config) {
-		config.redisOptions = options
 	}
 }
 

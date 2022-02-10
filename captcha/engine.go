@@ -2,8 +2,6 @@ package captcha
 
 import (
 	"errors"
-
-	"github.com/yasin-wu/graphic_captcha/redis"
 )
 
 /**
@@ -37,16 +35,16 @@ type Engine interface {
  * @return: Engine, error
  * @description: 新建验证器
  */
-func New(captchaType CaptchaType, redisHost string, options ...Option) (Engine, error) {
-	if redisHost == "" {
-		return nil, errors.New("redis host is nil")
+func New(captchaType CaptchaType, redisOptions *RedisOptions, options ...Option) (Engine, error) {
+	if redisOptions == nil {
+		return nil, errors.New("redis options is nil")
 	}
 	conf := &config{}
 	for _, f := range options {
 		f(conf)
 	}
 	checkConf(conf)
-	redisCli := redis.New(redisHost, conf.redisOptions...)
+	redisCli := NewRedis(redisOptions)
 	if redisCli == nil {
 		return nil, errors.New("redis client is nil")
 	}

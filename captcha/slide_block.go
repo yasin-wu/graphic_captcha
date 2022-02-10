@@ -140,7 +140,7 @@ func (s *SlideBlock) Check(token, pointJson string) (*RespMsg, error) {
 		msg = "验证通过"
 	}
 
-	err = s.conf.redisCli.Client.Del(token)
+	err = s.conf.redisCli.client.Del(s.conf.redisCli.ctx, token).Err()
 	if err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
