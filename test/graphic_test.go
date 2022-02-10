@@ -21,7 +21,6 @@ var (
 )
 
 func TestGet(t *testing.T) {
-
 	c, err := captcha.New(captchaType, redisOptions, captcha.WithExpireTime(30*time.Minute))
 	if err != nil {
 		log.Fatal(err)
