@@ -32,7 +32,7 @@ func (r *RedisClient) Set(token string, data interface{}, expireTime time.Durati
 		return errors.New("json marshal error:" + err.Error())
 	}
 	data64 := base64.StdEncoding.EncodeToString(dataBuff)
-	fmt.Println("pointJson:" + data64)
+	fmt.Println("PointJson:" + data64)
 	err = r.client.Set(r.ctx, token, data64, expireTime).Err()
 	if err != nil {
 		return errors.New("存储至redis失败")

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yasin-wu/graphic_captcha/captcha"
+	"github.com/yasin-wu/graphic_captcha/v2/captcha"
 )
 
 func init() {
@@ -37,8 +37,8 @@ func TestGet(t *testing.T) {
 
 func TestCheck(t *testing.T) {
 	c, err := captcha.New(captchaType, redisOptions)
-	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTY0NDQ1OTE4OSM="
-	pointJson := "W3siWCI6NDQsIlkiOjIsIlQiOiLnrpcifSx7IlgiOjE4MSwiWSI6OTAsIlQiOiLkuI0ifSx7IlgiOjI0MiwiWSI6MzAsIlQiOiLor6UifV0="
+	token := "XkNBUFQ6Y2xpY2tfd29yZDtDTEk6eWFzaW47U1RBTVA6MTY0NDQ1OTUwMCM="
+	pointJson := "W3siWCI6MzksIlkiOjUxLCJUIjoi5ZOAIn0seyJYIjoxNzEsIlkiOjc1LCJUIjoi6L+eIn0seyJYIjoyMzgsIlkiOjUyLCJUIjoi5oCVIn1d"
 	resp, err := c.Check(token, pointJson)
 	if err != nil {
 		log.Fatal(err)
