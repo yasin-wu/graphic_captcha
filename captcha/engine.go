@@ -41,7 +41,7 @@ func New(captchaType CaptchaType, redisOptions *RedisOptions, options ...Option)
 		f(conf)
 	}
 	checkConf(conf)
-	redisCli := NewRedis(redisOptions)
+	redisCli := newRedis(redisOptions)
 	if redisCli == nil {
 		return nil, errors.New("redis client is nil")
 	}

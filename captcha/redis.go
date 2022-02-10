@@ -21,7 +21,7 @@ type RedisClient struct {
 
 var defaultRedisOptions = &RedisOptions{Addr: "localhost:6379", Password: "", DB: 0}
 
-func NewRedis(options *RedisOptions) *RedisClient {
+func newRedis(options *RedisOptions) *RedisClient {
 	if options == nil {
 		options = defaultRedisOptions
 	}
