@@ -19,9 +19,11 @@ type RedisClient struct {
 	ctx    context.Context
 }
 
+var defaultRedisOptions = &RedisOptions{Addr: "localhost:6379", Password: "", DB: 0}
+
 func NewRedis(options *RedisOptions) *RedisClient {
 	if options == nil {
-		return nil
+		options = defaultRedisOptions
 	}
 	return &RedisClient{client: redis.NewClient((*redis.Options)(options)), ctx: context.Background()}
 }
@@ -59,11 +61,6 @@ func (r *RedisClient) Get(token string) ([]byte, error) {
 	if err != nil {
 		return nil, errors.New("get captcha error:" + err.Error())
 	}
-	/*var cachedStr string
-	err = json.Unmarshal([]byte(cachedBuff), &cachedStr)
-	if err != nil {
-		return nil, errors.New("json unmarshal error:" + err.Error())
-	}*/
 	base64Buff, err := base64.StdEncoding.DecodeString(cachedBuff)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())

@@ -36,9 +36,6 @@ type Engine interface {
  * @description: 新建验证器
  */
 func New(captchaType CaptchaType, redisOptions *RedisOptions, options ...Option) (Engine, error) {
-	if redisOptions == nil {
-		return nil, errors.New("redis options is nil")
-	}
 	conf := &config{}
 	for _, f := range options {
 		f(conf)
