@@ -31,7 +31,7 @@ type Engine interface {
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:18
- * @params: captchaType common.CaptchaType, redisHost string, options ...Option
+ * @params: captchaType CaptchaType, redisOptions *RedisOptions, options ...Option
  * @return: Engine, error
  * @description: 新建验证器
  */
