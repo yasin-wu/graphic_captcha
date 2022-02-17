@@ -17,10 +17,6 @@ require github.com/yasin-wu/graphic_captcha/v2 v2.0.1
 ## 使用
 
 ````go
-func init() {
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-}
-
 var (
 	captchaType = captcha.CaptchaTypeBlockPuzzle
     redisOptions = &captcha.RedisOptions{Addr: "47.108.155.25:6379", Password: "yasinwu"}

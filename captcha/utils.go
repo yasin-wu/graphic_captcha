@@ -3,6 +3,7 @@ package captcha
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
@@ -207,4 +208,9 @@ func isFile(path string) bool {
 		return false
 	}
 	return !fi.IsDir()
+}
+
+func Println(data interface{}) {
+	j, _ := json.MarshalIndent(data, "", "\t")
+	fmt.Println(string(j))
 }
