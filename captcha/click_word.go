@@ -43,7 +43,7 @@ var _ Engine = (*ClickWord)(nil)
  * @author: yasinWu
  * @date: 2022/1/13 14:06
  * @params: token string
- * @return: *common.Captcha, error
+ * @return: *Captcha, error
  * @description: 获取文字点选待验证信息
  */
 func (c *ClickWord) Get(token string) (*Captcha, error) {
@@ -117,7 +117,7 @@ func (c *ClickWord) Get(token string) (*Captcha, error) {
  * @author: yasinWu
  * @date: 2022/1/13 14:06
  * @params: token, pointJson string;pointJson为point base64后数据
- * @return: *common.RespMsg, error
+ * @return: *RespMsg, error
  * @description: 校验用户操作结果
  */
 func (c *ClickWord) Check(token, pointJson string) (*RespMsg, error) {

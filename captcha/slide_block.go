@@ -29,7 +29,7 @@ var _ Engine = (*SlideBlock)(nil)
  * @author: yasinWu
  * @date: 2022/1/13 14:19
  * @params: token string
- * @return: *common.Captcha, error
+ * @return: *Captcha, error
  * @description: 获取滑块待验证信息
  */
 func (s *SlideBlock) Get(token string) (*Captcha, error) {
@@ -108,7 +108,7 @@ func (s *SlideBlock) Get(token string) (*Captcha, error) {
  * @author: yasinWu
  * @date: 2022/1/13 14:20
  * @params: token, pointJson string;pointJson为滑块图片base64值
- * @return: *common.RespMsg, error
+ * @return: *RespMsg, error
  * @description: 校验用户操作结果
  */
 func (s *SlideBlock) Check(token, pointJson string) (*RespMsg, error) {

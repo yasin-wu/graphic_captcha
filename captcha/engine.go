@@ -14,7 +14,7 @@ type Engine interface {
 	 * @author: yasinWu
 	 * @date: 2022/1/13 14:17
 	 * @params: token string
-	 * @return: *common.Captcha, error
+	 * @return: *Captcha, error
 	 * @description: 获取待验证信息
 	 */
 	Get(token string) (*Captcha, error)
@@ -22,7 +22,7 @@ type Engine interface {
 	 * @author: yasinWu
 	 * @date: 2022/1/13 14:17
 	 * @params: token, pointJson string
-	 * @return: *common.RespMsg, error
+	 * @return: *RespMsg, error
 	 * @description: 校验用户操作结果
 	 */
 	Check(token, pointJson string) (*RespMsg, error)
