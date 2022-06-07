@@ -17,7 +17,7 @@ import (
 
 var (
 	captchaType  = consts.CaptchaTypeClickWord
-	redisOptions = &redis.RedisOptions{Addr: "10.34.5.69:6379", Password: ""}
+	redisOptions = &redis.RedisOptions{Addr: "127.0.0.1:6379", Password: ""}
 )
 
 func TestGet(t *testing.T) {
