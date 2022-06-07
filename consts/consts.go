@@ -1,4 +1,4 @@
-package captcha
+package consts
 
 type CaptchaType string
 
@@ -9,8 +9,4 @@ const (
 
 const (
 	TokenFormat = "^CAPT:%s;CLI:%s;STAMP:%d#"
-)
-
-const (
-	TransparentThreshold uint32 = 150 << 8
 )

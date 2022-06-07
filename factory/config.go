@@ -1,4 +1,4 @@
-package captcha
+package factory
 
 import (
 	"time"
@@ -9,24 +9,23 @@ import (
  * @date: 2022/1/13 14:08
  * @description: 验证器配置项选择器
  */
-type Option func(conf *config)
+type Option func(conf *Config)
 
-type config struct {
-	clickImagePath string
-	clickWordFile  string
-	clickWordCount int
-	originalPath   string
-	blockPath      string
-	threshold      float64
-	blur           float64
-	brightness     float64
-	fontFile       string
-	fontSize       int
-	watermarkText  string
-	watermarkSize  int
-	dpi            float64
-	expireTime     time.Duration
-	redisCli       *RedisClient
+type Config struct {
+	ClickImagePath string
+	ClickWordFile  string
+	ClickWordCount int
+	OriginalPath   string
+	BlockPath      string
+	Threshold      float64
+	Blur           float64
+	Brightness     float64
+	FontFile       string
+	FontSize       int
+	WatermarkText  string
+	WatermarkSize  int
+	DPI            float64
+	ExpireTime     time.Duration
 }
 
 /**
@@ -37,8 +36,8 @@ type config struct {
  * @description: 配置文字点选背景图路径
  */
 func WithClickImagePath(path string) Option {
-	return func(config *config) {
-		config.clickImagePath = path
+	return func(config *Config) {
+		config.ClickImagePath = path
 	}
 }
 
@@ -50,8 +49,8 @@ func WithClickImagePath(path string) Option {
  * @description: 配置文字点选文字文件路径
  */
 func WithClickWordFile(file string) Option {
-	return func(config *config) {
-		config.clickWordFile = file
+	return func(config *Config) {
+		config.ClickWordFile = file
 	}
 }
 
@@ -63,8 +62,8 @@ func WithClickWordFile(file string) Option {
  * @description: 配置文字点选个数
  */
 func WithClickWordCount(count int) Option {
-	return func(config *config) {
-		config.clickWordCount = count
+	return func(config *Config) {
+		config.ClickWordCount = count
 	}
 }
 
@@ -76,8 +75,8 @@ func WithClickWordCount(count int) Option {
  * @description: 配置滑块验证背景图路径
  */
 func WithOriginalPath(path string) Option {
-	return func(config *config) {
-		config.originalPath = path
+	return func(config *Config) {
+		config.OriginalPath = path
 	}
 }
 
@@ -89,47 +88,47 @@ func WithOriginalPath(path string) Option {
  * @description: 配置滑块验证切块图路径
  */
 func WithBlockPath(path string) Option {
-	return func(config *config) {
-		config.blockPath = path
+	return func(config *Config) {
+		config.BlockPath = path
 	}
 }
 
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:08
- * @params: threshold float64
+ * @params: Threshold float64
  * @return: Option
  * @description: 配置滑块验证边界值
  */
 func WithThreshold(threshold float64) Option {
-	return func(config *config) {
-		config.threshold = threshold
+	return func(config *Config) {
+		config.Threshold = threshold
 	}
 }
 
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:08
- * @params: blur float64
+ * @params: Blur float64
  * @return: Option
  * @description: 配置滑块验证模糊值
  */
 func WithBlur(blur float64) Option {
-	return func(config *config) {
-		config.blur = blur
+	return func(config *Config) {
+		config.Blur = blur
 	}
 }
 
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:08
- * @params: brightness float64
+ * @params: Brightness float64
  * @return: Option
  * @description: 配置滑块验证亮度值
  */
 func WithBrightness(brightness float64) Option {
-	return func(config *config) {
-		config.brightness = brightness
+	return func(config *Config) {
+		config.Brightness = brightness
 	}
 }
 
@@ -141,8 +140,8 @@ func WithBrightness(brightness float64) Option {
  * @description: 配置字体文件路径
  */
 func WithFontFile(file string) Option {
-	return func(config *config) {
-		config.fontFile = file
+	return func(config *Config) {
+		config.FontFile = file
 	}
 }
 
@@ -154,8 +153,8 @@ func WithFontFile(file string) Option {
  * @description: 配置字体大小
  */
 func WithFontSize(size int) Option {
-	return func(config *config) {
-		config.fontSize = size
+	return func(config *Config) {
+		config.FontSize = size
 	}
 }
 
@@ -167,8 +166,8 @@ func WithFontSize(size int) Option {
  * @description: 配置水印内容
  */
 func WithWatermarkText(text string) Option {
-	return func(config *config) {
-		config.watermarkText = text
+	return func(config *Config) {
+		config.WatermarkText = text
 	}
 }
 
@@ -180,78 +179,78 @@ func WithWatermarkText(text string) Option {
  * @description: 配置水印大小
  */
 func WithWatermarkSize(size int) Option {
-	return func(config *config) {
-		config.watermarkSize = size
+	return func(config *Config) {
+		config.WatermarkSize = size
 	}
 }
 
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:08
- * @params: dpi float64
+ * @params: DPI float64
  * @return: Option
  * @description: 配置DPI
  */
 func WithDPI(dpi float64) Option {
-	return func(config *config) {
-		config.dpi = dpi
+	return func(config *Config) {
+		config.DPI = dpi
 	}
 }
 
 /**
  * @author: yasinWu
  * @date: 2022/1/13 14:14
- * @params: expireTime time.Duration
+ * @params: ExpireTime time.Duration
  * @return: Option
  * @description: 配置Redis key过期时间
  */
 func WithExpireTime(expireTime time.Duration) Option {
-	return func(config *config) {
-		config.expireTime = expireTime
+	return func(config *Config) {
+		config.ExpireTime = expireTime
 	}
 }
 
-func checkConf(conf *config) {
-	if conf.clickImagePath == "" {
-		conf.clickImagePath = "../conf/pic_click"
+func CheckConf(conf *Config) {
+	if conf.ClickImagePath == "" {
+		conf.ClickImagePath = "./config/pic_click"
 	}
-	if conf.clickWordFile == "" {
-		conf.clickWordFile = "../conf/fonts/license.txt"
+	if conf.ClickWordFile == "" {
+		conf.ClickWordFile = "./config/fonts/license.txt"
 	}
-	if conf.fontFile == "" {
-		conf.fontFile = "../conf/fonts/captcha.ttf"
+	if conf.FontFile == "" {
+		conf.FontFile = "./config/fonts/captcha.ttf"
 	}
-	if conf.clickWordCount == 0 {
-		conf.clickWordCount = 4
+	if conf.ClickWordCount == 0 {
+		conf.ClickWordCount = 4
 	}
-	if conf.fontSize == 0 {
-		conf.fontSize = 26
+	if conf.FontSize == 0 {
+		conf.FontSize = 26
 	}
-	if conf.watermarkText == "" {
-		conf.watermarkText = "yasin"
+	if conf.WatermarkText == "" {
+		conf.WatermarkText = "yasin"
 	}
-	if conf.watermarkSize == 0 {
-		conf.watermarkSize = 14
+	if conf.WatermarkSize == 0 {
+		conf.WatermarkSize = 14
 	}
-	if conf.dpi == 0 {
-		conf.dpi = 72
+	if conf.DPI == 0 {
+		conf.DPI = 72
 	}
-	if conf.expireTime == 0 {
-		conf.expireTime = time.Minute
+	if conf.ExpireTime == 0 {
+		conf.ExpireTime = time.Minute
 	}
-	if conf.originalPath == "" {
-		conf.originalPath = "../conf/jigsaw/original"
+	if conf.OriginalPath == "" {
+		conf.OriginalPath = "./config/jigsaw/original"
 	}
-	if conf.blockPath == "" {
-		conf.blockPath = "../conf/jigsaw/sliding_block"
+	if conf.BlockPath == "" {
+		conf.BlockPath = "./config/jigsaw/sliding_block"
 	}
-	if conf.threshold == 0 {
-		conf.threshold = 8
+	if conf.Threshold == 0 {
+		conf.Threshold = 8
 	}
-	if conf.blur == 0 {
-		conf.blur = 1.3
+	if conf.Blur == 0 {
+		conf.Blur = 1.3
 	}
-	if conf.brightness == 0 {
-		conf.brightness = -30
+	if conf.Brightness == 0 {
+		conf.Brightness = -30
 	}
 }

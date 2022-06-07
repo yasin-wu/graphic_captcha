@@ -1,4 +1,4 @@
-package captcha
+package image
 
 import (
 	"image"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/yasin-wu/graphic_captcha/v2/util"
 )
 
 type Image struct {
@@ -16,13 +18,13 @@ type Image struct {
 	Image    image.Image
 }
 
-func newImage(dir string) (*Image, error) {
+func New(dir string) (*Image, error) {
 	var err error
 	var fileName string
 	var staticImg image.Image
 	filePath := dir
-	if !isFile(dir) {
-		fileName, err = randomFileName(dir)
+	if !util.IsFile(dir) {
+		fileName, err = util.RandomFileName(dir)
 		if err != nil {
 			log.Printf("random file name error: %v", err)
 			return nil, err

@@ -1,4 +1,10 @@
-package captcha
+package entity
+
+type Response struct {
+	Status  int     `json:"status"`
+	Message string  `json:"message"`
+	Data    Captcha `json:"data"`
+}
 
 type Captcha struct {
 	Token       string   `json:"token"`
@@ -6,9 +12,4 @@ type Captcha struct {
 	OriImage    string   `json:"ori_image"`
 	JigsawImage string   `json:"jigsaw_image"`
 	ClickWords  []string `json:"click_words"`
-}
-
-type RespMsg struct {
-	Status  int    `json:"status"`
-	Message string `json:"message"`
 }

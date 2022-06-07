@@ -1,4 +1,4 @@
-package captcha
+package redis
 
 import (
 	"context"
@@ -21,7 +21,7 @@ type RedisClient struct {
 
 var defaultRedisOptions = &RedisOptions{Addr: "localhost:6379", Password: "", DB: 0}
 
-func newRedis(options *RedisOptions) *RedisClient {
+func New(options *RedisOptions) *RedisClient {
 	if options == nil {
 		options = defaultRedisOptions
 	}
@@ -67,4 +67,8 @@ func (r *RedisClient) Get(token string) ([]byte, error) {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}
 	return base64Buff, nil
+}
+
+func (r *RedisClient) Del(token string) error {
+	return r.client.Del(r.ctx, token).Err()
 }
