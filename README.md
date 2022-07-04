@@ -1,3 +1,4 @@
+[![OSCS Status](https://www.oscs1024.com/platform/badge/yasin-wu/graphic_captcha.svg?size=small)](https://www.murphysec.com/dr/eyEhxXb8cpZUwJ4dfO)
 ## 介绍
 
 Golang版本的文字点选验证和滑块验证
