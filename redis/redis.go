@@ -12,23 +12,23 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type RedisOptions redis.Options
+type Options redis.Options
 
-type RedisClient struct {
+type Client struct {
 	client *redis.Client
 	ctx    context.Context
 }
 
-var defaultRedisOptions = &RedisOptions{Addr: "localhost:6379", Password: "", DB: 0}
+var defaultRedisOptions = &Options{Addr: "localhost:6379", Password: "", DB: 0}
 
-func New(options *RedisOptions) *RedisClient {
+func New(options *Options) *Client {
 	if options == nil {
 		options = defaultRedisOptions
 	}
-	return &RedisClient{client: redis.NewClient((*redis.Options)(options)), ctx: context.Background()}
+	return &Client{client: redis.NewClient((*redis.Options)(options)), ctx: context.Background()}
 }
 
-func (r *RedisClient) Set(token string, data interface{}, expireTime time.Duration) error {
+func (r *Client) Set(token string, data interface{}, expireTime time.Duration) error {
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())
@@ -43,7 +43,7 @@ func (r *RedisClient) Set(token string, data interface{}, expireTime time.Durati
 	return nil
 }
 
-func (r *RedisClient) Get(token string) ([]byte, error) {
+func (r *Client) Get(token string) ([]byte, error) {
 	ttl, err := r.client.TTL(r.ctx, token).Result()
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (r *RedisClient) Get(token string) ([]byte, error) {
 		return nil, errors.New("验证码已过期，请刷新重试")
 	}
 	cachedBuff, err := r.client.Get(r.ctx, token).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, fmt.Errorf("%s does not exist", token)
 	}
 	if err != nil {
@@ -69,6 +69,6 @@ func (r *RedisClient) Get(token string) ([]byte, error) {
 	return base64Buff, nil
 }
 
-func (r *RedisClient) Del(token string) error {
+func (r *Client) Del(token string) error {
 	return r.client.Del(r.ctx, token).Err()
 }

@@ -48,12 +48,12 @@ type clickWord struct {
 	watermarkSize  int
 	dpi            float64
 	expireTime     time.Duration
-	redisCli       *redis.RedisClient
+	redisCli       *redis.Client
 }
 
 var _ factory.Captcha = (*clickWord)(nil)
 
-func New(redisCli *redis.RedisClient, config factory.Config) *clickWord {
+func New(redisCli *redis.Client, config factory.Config) *clickWord {
 	return &clickWord{
 		clickImagePath: config.ClickImagePath,
 		clickWordFile:  config.ClickWordFile,
@@ -96,8 +96,8 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < len(str); i++ {
 		_w := (width - 24) / len(str)
-		x := i*_w + rand.Intn(_w-fontSize)
-		y := rand.Intn(height - fontSize - fontSize/2)
+		x := i*_w + rand.Intn(_w-fontSize)             //nolint:gosec
+		y := rand.Intn(height - fontSize - fontSize/2) //nolint:gosec
 		text := fmt.Sprintf("%c", str[i])
 		err := c.drawTextOnBackground(img, image.Pt(x, y), text)
 		if err != nil {
@@ -107,12 +107,12 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 			allDots = append(allDots, Point{x, y, text})
 		}
 	}
-	base64_, err := util.Image2Base64(img, fileType)
+	base64, err := util.Image2Base64(img, fileType)
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
 
-	//util.SaveImage("/Users/yasin/tmp.png", "png", img)
+	// util.SaveImage("/Users/yasin/tmp.png", "png", img)
 
 	err = c.redisCli.Set(token, allDots, c.expireTime)
 	if err != nil {
@@ -124,14 +124,14 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 		Data: entity.Captcha{
 			Token:      token,
 			Type:       string(consts.CaptchaTypeClickWord),
-			OriImage:   base64_,
+			OriImage:   base64,
 			ClickWords: clickWords,
 		},
 	}
 	return resp, nil
 }
 
-func (c *clickWord) Check(token, pointJson string) (*entity.Response, error) {
+func (c *clickWord) Check(token, pointJSON string) (*entity.Response, error) {
 	var cachedWord []Point
 	var checkedWord []Point
 	cachedBuff, err := c.redisCli.Get(token)
@@ -142,7 +142,7 @@ func (c *clickWord) Check(token, pointJson string) (*entity.Response, error) {
 	if err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
-	base64Buff, err := base64.StdEncoding.DecodeString(pointJson)
+	base64Buff, err := base64.StdEncoding.DecodeString(pointJSON)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}
@@ -173,8 +173,8 @@ func (c *clickWord) Check(token, pointJson string) (*entity.Response, error) {
 
 func (c *clickWord) randomNoCheck(words []rune) []string {
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(c.clickWordCount)
-	var result []string
+	index := rand.Intn(c.clickWordCount) //nolint:gosec
+	var result []string                  //nolint:prealloc
 	for i, v := range words {
 		if i == index {
 			continue
@@ -193,7 +193,7 @@ func (c *clickWord) randomHanZi() ([]rune, error) {
 	var result []rune
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < c.clickWordCount; i++ {
-		index := rand.Intn(len(wordRunes))
+		index := rand.Intn(len(wordRunes)) //nolint:gosec
 		result = append(result, wordRunes[index])
 	}
 	return result, nil
@@ -224,7 +224,7 @@ func (c *clickWord) stringsContains(stringArray []string, substr string) bool {
 	return false
 }
 
-func (c *clickWord) drawTextOnBackground(bg *image.RGBA, pt image.Point, text string) error {
+func (c *clickWord) drawTextOnBackground(bg draw.Image, pt image.Point, text string) error {
 	fontBytes, err := ioutil.ReadFile(c.fontFile)
 	if err != nil {
 		return errors.New("read font file error:" + err.Error())
@@ -233,29 +233,29 @@ func (c *clickWord) drawTextOnBackground(bg *image.RGBA, pt image.Point, text st
 	if err != nil {
 		return errors.New("parse font error:" + err.Error())
 	}
-	angle := float64(rand.New(rand.NewSource(time.Now().UnixNano())).Intn(40) - 20)
+	angle := float64(rand.New(rand.NewSource(time.Now().UnixNano())).Intn(40) - 20) //nolint:gosec
 	fontPng := c.drawString2Png(fontStyle, text)
 	rotate := imaging.Rotate(fontPng, angle, color.Transparent)
 	resize := imaging.Resize(rotate, c.fontSize, c.fontSize, imaging.Lanczos)
 	resizePng := util.Image2RGBA(resize)
-	draw.Draw(bg, image.Rect(pt.X, pt.Y, pt.X+c.fontSize, pt.Y+c.fontSize), resizePng, image.ZP, draw.Over)
+	draw.Draw(bg, image.Rect(pt.X, pt.Y, pt.X+c.fontSize, pt.Y+c.fontSize), resizePng, image.Point{}, draw.Over)
 	return nil
 }
 
 func (c *clickWord) drawString2Png(font *truetype.Font, str string) *image.RGBA {
 	fontColor := image.NewUniform(color.RGBA{
-		R: uint8(rand.Intn(255)),
-		G: uint8(rand.Intn(255) + 50),
-		B: uint8(rand.Intn(255)),
+		R: uint8(rand.Intn(255)),      //nolint:gosec
+		G: uint8(rand.Intn(255) + 50), //nolint:gosec
+		B: uint8(rand.Intn(255)),      //nolint:gosec
 		A: uint8(255)})
-	img := image.NewRGBA(image.Rect(0, 0, int(c.fontSize), int(c.fontSize)))
+	img := image.NewRGBA(image.Rect(0, 0, int(c.fontSize), int(c.fontSize))) //nolint:gosec
 	ctx := freetype.NewContext()
 	ctx.SetDst(img)
 	ctx.SetClip(img.Bounds())
 	ctx.SetSrc(image.NewUniform(fontColor))
 	ctx.SetFontSize(float64(c.fontSize))
 	ctx.SetFont(font)
-	pt := freetype.Pt(0, int(-c.fontSize/6)+ctx.PointToFixed(float64(c.fontSize)).Ceil())
+	pt := freetype.Pt(0, int(-c.fontSize/6)+ctx.PointToFixed(float64(c.fontSize)).Ceil()) //nolint:gosec
 	ctx.DrawString(str, pt)
 	return img
 }

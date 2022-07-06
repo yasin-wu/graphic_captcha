@@ -35,7 +35,7 @@ func RandomFileName(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var fileNames []string
+	var fileNames []string //nolint:prealloc
 	for _, v := range files {
 		if strings.HasPrefix(v.Name(), ".") {
 			continue
@@ -46,7 +46,7 @@ func RandomFileName(dir string) (string, error) {
 		return "", errors.New("dir is nil")
 	}
 	rand.Seed(time.Now().UnixNano())
-	index := rand.Intn(len(fileNames))
+	index := rand.Intn(len(fileNames)) //nolint:gosec
 	if index >= len(fileNames) {
 		index = len(fileNames) - 1
 	}
@@ -65,7 +65,7 @@ func Image2RGBA(oriImg image.Image) *image.RGBA {
 	return rgba
 }
 
-func DrawText(img *image.RGBA, watermarkText, fontFile string, watermarkSize int, dpi float64) error {
+func DrawText(img draw.Image, watermarkText, fontFile string, watermarkSize int, dpi float64) error {
 	watermarkLen := strings.Count(watermarkText, "") - 1
 	pt := image.Pt(img.Bounds().Dx()-(watermarkSize*watermarkLen), img.Bounds().Dy()-watermarkLen)
 	fontColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
@@ -112,7 +112,7 @@ func RandInt(min, max int) int {
 	if min >= max || min == 0 || max == 0 {
 		return max
 	}
-	return rand.Intn(max-min) + min
+	return rand.Intn(max-min) + min //nolint:gosec
 }
 
 func SaveImage(fileName, fileType string, img image.Image) {

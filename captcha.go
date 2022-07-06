@@ -1,4 +1,4 @@
-package graphic_captcha
+package graphiccaptcha
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ import (
 	"github.com/yasin-wu/graphic_captcha/v2/redis"
 )
 
-func New(captchaType consts.CaptchaType, redisOptions *redis.RedisOptions, options ...factory.Option) (factory.Captcha, error) {
+func New(captchaType consts.CaptchaType, redisOptions *redis.Options, options ...factory.Option) (factory.Captcha, error) {
 	conf := &factory.Config{}
 	for _, f := range options {
 		f(conf)

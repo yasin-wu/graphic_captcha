@@ -41,12 +41,12 @@ type slideBlock struct {
 	dpi                  float64
 	transparentThreshold uint32
 	expireTime           time.Duration
-	redisCli             *redis.RedisClient
+	redisCli             *redis.Client
 }
 
 var _ factory.Captcha = (*slideBlock)(nil)
 
-func New(redisCli *redis.RedisClient, config factory.Config) *slideBlock {
+func New(redisCli *redis.Client, config factory.Config) *slideBlock {
 	return &slideBlock{
 		originalPath:         config.OriginalPath,
 		blockPath:            config.BlockPath,
@@ -63,6 +63,7 @@ func New(redisCli *redis.RedisClient, config factory.Config) *slideBlock {
 	}
 }
 
+//nolint:funlen
 func (c *slideBlock) Get(token string) (*entity.Response, error) {
 	oriImg, err := image2.New(c.originalPath)
 	if err != nil {
@@ -117,8 +118,8 @@ func (c *slideBlock) Get(token string) (*entity.Response, error) {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
 
-	//util.SaveImage("/Users/yasin/tmp.png", "png", oriRGBA)
-	//util.SaveImage("/Users/yasin/block.png", "png", newImage)
+	util.SaveImage("/Users/yasin/tmp.png", "png", oriRGBA)
+	util.SaveImage("/Users/yasin/block.png", "png", newImage)
 
 	err = c.redisCli.Set(token, point, c.expireTime)
 	if err != nil {
@@ -137,7 +138,7 @@ func (c *slideBlock) Get(token string) (*entity.Response, error) {
 	return resp, nil
 }
 
-func (c *slideBlock) Check(token, pointJson string) (*entity.Response, error) {
+func (c *slideBlock) Check(token, pointJSON string) (*entity.Response, error) {
 	var cachedPoint image.Point
 	var checkedPoint image.Point
 
@@ -149,7 +150,7 @@ func (c *slideBlock) Check(token, pointJson string) (*entity.Response, error) {
 	if err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
-	base64Buff, err := base64.StdEncoding.DecodeString(pointJson)
+	base64Buff, err := base64.StdEncoding.DecodeString(pointJSON)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}
@@ -293,12 +294,12 @@ func (c *slideBlock) generateJigsawPoint(originalWidth, originalHeight, jigsawWi
 	if widthDifference <= 0 {
 		x = 5
 	} else {
-		x = rand.Intn(originalWidth-jigsawWidth-100) + 100
+		x = rand.Intn(originalWidth-jigsawWidth-100) + 100 //nolint:gosec
 	}
 	if heightDifference <= 0 {
 		y = 5
 	} else {
-		y = rand.Intn(originalWidth-jigsawWidth) + 5
+		y = rand.Intn(originalWidth-jigsawWidth) + 5 //nolint:gosec
 	}
 	return image.Point{X: x, Y: y}
 }
