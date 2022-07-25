@@ -28,7 +28,7 @@ func New(options *Options) *Client {
 	return &Client{client: redis.NewClient((*redis.Options)(options)), ctx: context.Background()}
 }
 
-func (r *Client) Set(token string, data interface{}, expireTime time.Duration) error {
+func (r *Client) Set(token string, data any, expireTime time.Duration) error {
 	dataBuff, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("json marshal error:" + err.Error())

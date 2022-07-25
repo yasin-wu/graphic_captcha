@@ -1,4 +1,4 @@
-package graphiccaptcha
+package test
 
 import (
 	"encoding/base64"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"testing"
 	"time"
+
+	graphiccaptcha "github.com/yasin-wu/graphic_captcha/v2"
 
 	"github.com/yasin-wu/graphic_captcha/v2/util"
 
@@ -17,11 +19,11 @@ import (
 
 var (
 	captchaType  = consts.CaptchaTypeBlockPuzzle
-	redisOptions = &redis.Options{Addr: "127.0.0.1:6379", Password: "yasinwu"}
+	redisOptions = &redis.Options{Addr: "localhost:6379", Password: "yasinwu"}
 )
 
 func TestGet(t *testing.T) {
-	c, err := New(captchaType, redisOptions, factory.WithExpireTime(30*time.Minute))
+	c, err := graphiccaptcha.New(captchaType, redisOptions, factory.WithExpireTime(30*time.Minute))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,12 +36,12 @@ func TestGet(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
-	c, err := New(captchaType, redisOptions)
+	c, err := graphiccaptcha.New(captchaType, redisOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjU0NTY3NjU3Iw==" //nolint:gosec
-	pointJSON := "eyJYIjoyMjMsIlkiOjV9"
+	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjU4NzI5MDIzIw==" //nolint:gosec
+	pointJSON := "eyJYIjoxMTgsIlkiOjV9"
 	resp, err := c.Check(token, pointJSON)
 	if err != nil {
 		log.Fatal(err)

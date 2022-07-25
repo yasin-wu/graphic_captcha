@@ -212,13 +212,13 @@ func WithExpireTime(expireTime time.Duration) Option {
 
 func CheckConf(conf *Config) {
 	if conf.ClickImagePath == "" {
-		conf.ClickImagePath = "./config/pic_click"
+		conf.ClickImagePath = "../config/pic_click"
 	}
 	if conf.ClickWordFile == "" {
-		conf.ClickWordFile = "./config/fonts/license.txt"
+		conf.ClickWordFile = "../config/fonts/license.txt"
 	}
 	if conf.FontFile == "" {
-		conf.FontFile = "./config/fonts/captcha.ttf"
+		conf.FontFile = "../config/fonts/captcha.ttf"
 	}
 	if conf.ClickWordCount == 0 {
 		conf.ClickWordCount = 4
@@ -239,10 +239,10 @@ func CheckConf(conf *Config) {
 		conf.ExpireTime = time.Minute
 	}
 	if conf.OriginalPath == "" {
-		conf.OriginalPath = "./config/jigsaw/original"
+		conf.OriginalPath = "../config/jigsaw/original"
 	}
 	if conf.BlockPath == "" {
-		conf.BlockPath = "./config/jigsaw/sliding_block"
+		conf.BlockPath = "../config/jigsaw/sliding_block"
 	}
 	if conf.Threshold == 0 {
 		conf.Threshold = 8

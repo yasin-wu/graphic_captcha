@@ -134,7 +134,7 @@ func SaveImage(fileName, fileType string, img image.Image) {
 	}
 }
 
-func Println(data interface{}) {
+func Println(data any) {
 	j, _ := json.MarshalIndent(data, "", "\t")
 	fmt.Println(string(j))
 }

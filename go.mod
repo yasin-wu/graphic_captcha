@@ -1,6 +1,6 @@
 module github.com/yasin-wu/graphic_captcha/v2
 
-go 1.17
+go 1.18
 
 require (
 	github.com/disintegration/imaging v1.6.2
