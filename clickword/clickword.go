@@ -81,11 +81,9 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 	}
 	width := img.Bounds().Dx()
 	height := img.Bounds().Dy()
-	err = util.DrawText(img, c.watermarkText, c.fontFile, c.watermarkSize, c.dpi)
-	if err != nil {
+	if err = util.DrawText(img, c.watermarkText, c.fontFile, c.watermarkSize, c.dpi); err != nil {
 		return nil, errors.New("draw watermark failed:" + err.Error())
 	}
-
 	str, err := c.randomHanZi()
 	if err != nil {
 		return nil, errors.New("randomHanZi error:" + err.Error())
@@ -99,8 +97,7 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 		x := i*_w + rand.Intn(_w-fontSize)             //nolint:gosec
 		y := rand.Intn(height - fontSize - fontSize/2) //nolint:gosec
 		text := fmt.Sprintf("%c", str[i])
-		err := c.drawTextOnBackground(img, image.Pt(x, y), text)
-		if err != nil {
+		if err := c.drawTextOnBackground(img, image.Pt(x, y), text); err != nil {
 			continue
 		}
 		if c.stringsContains(clickWords, text) {
@@ -114,8 +111,7 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 
 	// util.SaveImage("/Users/yasin/tmp.png", "png", img)
 
-	err = c.redisCli.Set(token, allDots, c.expireTime)
-	if err != nil {
+	if err = c.redisCli.Set(token, allDots, c.expireTime); err != nil {
 		return nil, err
 	}
 	resp := &entity.Response{
@@ -138,16 +134,14 @@ func (c *clickWord) Check(token, pointJSON string) (*entity.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(cachedBuff, &cachedWord)
-	if err != nil {
+	if err = json.Unmarshal(cachedBuff, &cachedWord); err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 	base64Buff, err := base64.StdEncoding.DecodeString(pointJSON)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}
-	err = json.Unmarshal(base64Buff, &checkedWord)
-	if err != nil {
+	if err = json.Unmarshal(base64Buff, &checkedWord); err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 	if len(cachedWord) != len(checkedWord) {
@@ -164,8 +158,7 @@ func (c *clickWord) Check(token, pointJSON string) (*entity.Response, error) {
 			status = 201
 		}
 	}
-	err = c.redisCli.Del(token)
-	if err != nil {
+	if err = c.redisCli.Del(token); err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
 	return &entity.Response{Status: status, Message: msg}, nil

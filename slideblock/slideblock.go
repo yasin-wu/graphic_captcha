@@ -77,8 +77,7 @@ func (c *slideBlock) Get(token string) (*entity.Response, error) {
 	blockWidth := blockImg.Image.Bounds().Dx()
 	blockHeight := blockImg.Image.Bounds().Dy()
 	point := c.generateJigsawPoint(oriImg.Image.Bounds().Dx(), oriImg.Image.Bounds().Dy(), blockWidth, blockHeight)
-	err = util.DrawText(oriRGBA, c.watermarkText, c.fontFile, c.watermarkSize, c.dpi)
-	if err != nil {
+	if err = util.DrawText(oriRGBA, c.watermarkText, c.fontFile, c.watermarkSize, c.dpi); err != nil {
 		return nil, err
 	}
 	c.interfereBlock(oriRGBA, point, blockImg.FileName)
@@ -118,11 +117,10 @@ func (c *slideBlock) Get(token string) (*entity.Response, error) {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
 
-	util.SaveImage("/Users/yasin/tmp.png", "png", oriRGBA)
-	util.SaveImage("/Users/yasin/block.png", "png", newImage)
+	//util.SaveImage("/Users/yasin/tmp.png", "png", oriRGBA)
+	//util.SaveImage("/Users/yasin/block.png", "png", newImage)
 
-	err = c.redisCli.Set(token, point, c.expireTime)
-	if err != nil {
+	if err = c.redisCli.Set(token, point, c.expireTime); err != nil {
 		return nil, err
 	}
 	resp := &entity.Response{
@@ -146,19 +144,16 @@ func (c *slideBlock) Check(token, pointJSON string) (*entity.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(cachedBuff, &cachedPoint)
-	if err != nil {
+	if err = json.Unmarshal(cachedBuff, &cachedPoint); err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
 	base64Buff, err := base64.StdEncoding.DecodeString(pointJSON)
 	if err != nil {
 		return nil, errors.New("base64 decode error:" + err.Error())
 	}
-	err = json.Unmarshal(base64Buff, &checkedPoint)
-	if err != nil {
+	if err = json.Unmarshal(base64Buff, &checkedPoint); err != nil {
 		return nil, errors.New("json unmarshal error:" + err.Error())
 	}
-
 	status := 201
 	msg := "验证失败"
 	if (math.Abs(float64(cachedPoint.X-checkedPoint.X)) <= c.threshold) &&
@@ -167,8 +162,7 @@ func (c *slideBlock) Check(token, pointJSON string) (*entity.Response, error) {
 		msg = "验证通过"
 	}
 
-	err = c.redisCli.Del(token)
-	if err != nil {
+	if err = c.redisCli.Del(token); err != nil {
 		log.Printf("验证码缓存删除失败:%v", token)
 	}
 	return &entity.Response{Status: status, Message: msg}, nil
@@ -203,7 +197,9 @@ func (c *slideBlock) doInterfere(blockFileName string, img *image.RGBA, point im
 		log.Printf("open file error: %v", err)
 		return
 	}
-	defer blockFile.Close()
+	defer func(blockFile *os.File) {
+		_ = blockFile.Close()
+	}(blockFile)
 	blockImg, _ := png.Decode(blockFile)
 	originalWidth := img.Bounds().Dx()
 	jigsawWidth := blockImg.Bounds().Dx()
