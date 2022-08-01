@@ -107,7 +107,7 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 			allDots = append(allDots, Point{x, y, text})
 		}
 	}
-	base64, err := util.Image2Base64(img, fileType)
+	image2Base64, err := util.Image2Base64(img, fileType)
 	if err != nil {
 		return nil, errors.New("image to base64 error:" + err.Error())
 	}
@@ -124,7 +124,7 @@ func (c *clickWord) Get(token string) (*entity.Response, error) {
 		Data: entity.Captcha{
 			Token:      token,
 			Type:       string(consts.CaptchaTypeClickWord),
-			OriImage:   base64,
+			OriImage:   image2Base64,
 			ClickWords: clickWords,
 		},
 	}
@@ -248,14 +248,14 @@ func (c *clickWord) drawString2Png(font *truetype.Font, str string) *image.RGBA 
 		G: uint8(rand.Intn(255) + 50), //nolint:gosec
 		B: uint8(rand.Intn(255)),      //nolint:gosec
 		A: uint8(255)})
-	img := image.NewRGBA(image.Rect(0, 0, int(c.fontSize), int(c.fontSize))) //nolint:gosec
+	img := image.NewRGBA(image.Rect(0, 0, c.fontSize, c.fontSize)) //nolint:gosec
 	ctx := freetype.NewContext()
 	ctx.SetDst(img)
 	ctx.SetClip(img.Bounds())
 	ctx.SetSrc(image.NewUniform(fontColor))
 	ctx.SetFontSize(float64(c.fontSize))
 	ctx.SetFont(font)
-	pt := freetype.Pt(0, int(-c.fontSize/6)+ctx.PointToFixed(float64(c.fontSize)).Ceil()) //nolint:gosec
+	pt := freetype.Pt(0, -c.fontSize/6+ctx.PointToFixed(float64(c.fontSize)).Ceil()) //nolint:gosec
 	_, _ = ctx.DrawString(str, pt)
 	return img
 }
