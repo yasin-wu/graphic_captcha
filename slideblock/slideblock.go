@@ -229,7 +229,9 @@ func (c *slideBlock) doInterfere(blockFileName string, img *image.RGBA, point im
 		for y := 0; y < blockImg.Bounds().Dy(); y++ {
 			_, _, _, a := blockImg.At(x, y).RGBA()
 			if a > c.transparentThreshold {
-				img.Set(x+point.X, y+point.Y, c.colorMix((blurRGB.At(x, y)).(color.RGBA), (img.At(x+point.X, y+point.Y)).(color.RGBA)))
+				img.Set(x+point.X, y+point.Y,
+					c.colorMix((blurRGB.At(x, y)).(color.RGBA),
+						(img.At(x+point.X, y+point.Y)).(color.RGBA)))
 			}
 			if x == (blockImg.Bounds().Dx()-1) || y == (blockImg.Bounds().Dy()-1) {
 				continue

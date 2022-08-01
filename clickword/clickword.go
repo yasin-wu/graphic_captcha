@@ -256,6 +256,6 @@ func (c *clickWord) drawString2Png(font *truetype.Font, str string) *image.RGBA 
 	ctx.SetFontSize(float64(c.fontSize))
 	ctx.SetFont(font)
 	pt := freetype.Pt(0, int(-c.fontSize/6)+ctx.PointToFixed(float64(c.fontSize)).Ceil()) //nolint:gosec
-	ctx.DrawString(str, pt)
+	_, _ = ctx.DrawString(str, pt)
 	return img
 }

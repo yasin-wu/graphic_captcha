@@ -13,6 +13,7 @@ import (
 	"github.com/yasin-wu/graphic_captcha/v2/redis"
 )
 
+// nolint:lll
 func New(captchaType consts.CaptchaType, redisOptions *redis.Options, options ...factory.Option) (factory.Captcha, error) {
 	conf := &factory.Config{}
 	for _, f := range options {
