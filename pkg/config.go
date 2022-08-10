@@ -1,14 +1,13 @@
-package factory
+package pkg
 
 import (
 	"time"
+
+	"github.com/go-redis/redis/v8"
 )
 
-/**
- * @author: yasinWu
- * @date: 2022/1/13 14:08
- * @description: 验证器配置项选择器
- */
+type RedisOptions redis.Options
+
 type Option func(conf *Config)
 
 type Config struct {

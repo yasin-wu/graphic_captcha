@@ -12,7 +12,7 @@ go get -u github.com/yasin-wu/graphic_captcha
 推荐使用go.mod
 
 ```
-require github.com/yasin-wu/graphic_captcha/v2 v2.1.1
+require github.com/yasin-wu/graphic_captcha/v2 v2.2.0
 ```
 
 ## 使用

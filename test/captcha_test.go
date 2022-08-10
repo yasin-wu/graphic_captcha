@@ -7,32 +7,29 @@ import (
 	"testing"
 	"time"
 
-	graphiccaptcha "github.com/yasin-wu/graphic_captcha/v2"
+	"github.com/yasin-wu/graphic_captcha/v2/internal/util"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg"
 
-	"github.com/yasin-wu/graphic_captcha/v2/util"
-
-	"github.com/yasin-wu/graphic_captcha/v2/consts"
-	"github.com/yasin-wu/graphic_captcha/v2/redis"
-
-	"github.com/yasin-wu/graphic_captcha/v2/factory"
+	graphiccaptcha "github.com/yasin-wu/graphic_captcha/v2/captcha"
 )
 
 var (
-	captchaType  = consts.CaptchaTypeBlockPuzzle
-	redisOptions = &redis.Options{Addr: "localhost:6379", Password: "yasinwu"}
+	captchaType  = pkg.CaptchaTypeBlockPuzzle
+	redisOptions = &pkg.RedisOptions{Addr: "localhost:6379", Password: "yasinwu"}
 )
 
 func TestGet(t *testing.T) {
-	c, err := graphiccaptcha.New(captchaType, redisOptions, factory.WithExpireTime(30*time.Minute))
+	c, err := graphiccaptcha.New(captchaType, redisOptions, pkg.WithExpireTime(30*time.Minute))
 	if err != nil {
 		log.Fatal(err)
 	}
-	token := fmt.Sprintf(consts.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
+	token := fmt.Sprintf(pkg.TokenFormat, string(captchaType), "yasin", time.Now().Unix())
 	token = base64.StdEncoding.EncodeToString([]byte(token))
-	_, err = c.Get(token)
+	resp, err := c.Get(token)
 	if err != nil {
 		log.Fatal(err)
 	}
+	util.Println(resp)
 }
 
 func TestCheck(t *testing.T) {
@@ -40,8 +37,8 @@ func TestCheck(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjU4NzI5MDIzIw==" //nolint:gosec
-	pointJSON := "eyJYIjoxMTgsIlkiOjV9"
+	token := "XkNBUFQ6YmxvY2tfcHV6emxlO0NMSTp5YXNpbjtTVEFNUDoxNjYwMTEwODA0Iw==" //nolint:gosec
+	pointJSON := "eyJYIjoyMDIsIlkiOjV9"
 	resp, err := c.Check(token, pointJSON)
 	if err != nil {
 		log.Fatal(err)

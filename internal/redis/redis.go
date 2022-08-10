@@ -9,19 +9,19 @@ import (
 	"log"
 	"time"
 
+	"github.com/yasin-wu/graphic_captcha/v2/pkg"
+
 	"github.com/go-redis/redis/v8"
 )
-
-type Options redis.Options
 
 type Client struct {
 	client *redis.Client
 	ctx    context.Context
 }
 
-var defaultRedisOptions = &Options{Addr: "localhost:6379", Password: "", DB: 0}
+var defaultRedisOptions = &pkg.RedisOptions{Addr: "localhost:6379", Password: "", DB: 0}
 
-func New(options *Options) *Client {
+func New(options *pkg.RedisOptions) *Client {
 	if options == nil {
 		options = defaultRedisOptions
 	}

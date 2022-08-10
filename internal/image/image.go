@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/yasin-wu/graphic_captcha/v2/util"
+	"github.com/yasin-wu/graphic_captcha/v2/internal/util"
 )
 
 type Image struct {
