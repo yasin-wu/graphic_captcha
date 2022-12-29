@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/entity"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/factory"
 	"image"
 	"image/color"
 	"image/draw"
@@ -15,13 +19,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/disintegration/imaging"
+	"github.com/golang/freetype/truetype"
 	image2 "github.com/yasin-wu/graphic_captcha/v2/internal/image"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/redis"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/util"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg"
-
-	"github.com/disintegration/imaging"
-	"github.com/golang/freetype/truetype"
 
 	"github.com/golang/freetype"
 )
@@ -45,9 +47,9 @@ type clickWord struct {
 	redisCli       *redis.Client
 }
 
-var _ pkg.Captchaer = (*clickWord)(nil)
+var _ factory.Captchaer = (*clickWord)(nil)
 
-func New(redisCli *redis.Client, config pkg.Config) *clickWord {
+func New(redisCli *redis.Client, config config.Config) factory.Captchaer {
 	return &clickWord{
 		clickImagePath: config.ClickImagePath,
 		clickWordFile:  config.ClickWordFile,
@@ -62,7 +64,7 @@ func New(redisCli *redis.Client, config pkg.Config) *clickWord {
 	}
 }
 
-func (c *clickWord) Get(token string) (*pkg.Response, error) {
+func (c *clickWord) Get(token string) (*entity.Response, error) {
 	oriImage, err := image2.New(c.clickImagePath)
 	if err != nil {
 		return nil, errors.New("new image error:" + err.Error())
@@ -108,12 +110,12 @@ func (c *clickWord) Get(token string) (*pkg.Response, error) {
 	if err = c.redisCli.Set(token, allDots, c.expireTime); err != nil {
 		return nil, err
 	}
-	resp := &pkg.Response{
+	resp := &entity.Response{
 		Status:  200,
 		Message: "OK",
-		Data: pkg.CaptchaDO{
+		Data: entity.CaptchaDO{
 			Token:      token,
-			Type:       string(pkg.CaptchaTypeClickWord),
+			Type:       string(consts.CaptchaTypeClickWord),
 			OriImage:   image2Base64,
 			ClickWords: clickWords,
 		},
@@ -121,7 +123,7 @@ func (c *clickWord) Get(token string) (*pkg.Response, error) {
 	return resp, nil
 }
 
-func (c *clickWord) Check(token, pointJSON string) (*pkg.Response, error) {
+func (c *clickWord) Check(token, pointJSON string) (*entity.Response, error) {
 	var cachedWord []Point
 	var checkedWord []Point
 	cachedBuff, err := c.redisCli.Get(token)
@@ -155,7 +157,7 @@ func (c *clickWord) Check(token, pointJSON string) (*pkg.Response, error) {
 	if err = c.redisCli.Del(token); err != nil {
 		log.Printf("验证码缓存删除失败:%s", token)
 	}
-	return &pkg.Response{Status: status, Message: msg}, nil
+	return &entity.Response{Status: status, Message: msg}, nil
 }
 
 func (c *clickWord) randomNoCheck(words []rune) []string {

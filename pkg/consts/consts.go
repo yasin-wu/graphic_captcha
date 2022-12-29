@@ -1,4 +1,4 @@
-package pkg
+package consts
 
 type CaptchaType string
 

@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/entity"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/factory"
 	"image"
 	"image/color"
 	"image/png"
@@ -15,12 +19,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/disintegration/imaging"
 	image2 "github.com/yasin-wu/graphic_captcha/v2/internal/image"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/redis"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/util"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg"
-
-	"github.com/disintegration/imaging"
 )
 
 type slideBlock struct {
@@ -38,9 +40,9 @@ type slideBlock struct {
 	redisCli             *redis.Client
 }
 
-var _ pkg.Captchaer = (*slideBlock)(nil)
+var _ factory.Captchaer = (*slideBlock)(nil)
 
-func New(redisCli *redis.Client, config pkg.Config) *slideBlock {
+func New(redisCli *redis.Client, config config.Config) factory.Captchaer {
 	return &slideBlock{
 		originalPath:         config.OriginalPath,
 		blockPath:            config.BlockPath,
@@ -58,7 +60,7 @@ func New(redisCli *redis.Client, config pkg.Config) *slideBlock {
 }
 
 //nolint:funlen
-func (c *slideBlock) Get(token string) (*pkg.Response, error) {
+func (c *slideBlock) Get(token string) (*entity.Response, error) {
 	oriImg, err := image2.New(c.originalPath)
 	if err != nil {
 		return nil, err
@@ -117,12 +119,12 @@ func (c *slideBlock) Get(token string) (*pkg.Response, error) {
 	if err = c.redisCli.Set(token, point, c.expireTime); err != nil {
 		return nil, err
 	}
-	resp := &pkg.Response{
+	resp := &entity.Response{
 		Status:  200,
 		Message: "OK",
-		Data: pkg.CaptchaDO{
+		Data: entity.CaptchaDO{
 			Token:       token,
-			Type:        string(pkg.CaptchaTypeBlockPuzzle),
+			Type:        string(consts.CaptchaTypeBlockPuzzle),
 			OriImage:    oriBase64,
 			JigsawImage: blockBase64,
 		},
@@ -130,7 +132,7 @@ func (c *slideBlock) Get(token string) (*pkg.Response, error) {
 	return resp, nil
 }
 
-func (c *slideBlock) Check(token, pointJSON string) (*pkg.Response, error) {
+func (c *slideBlock) Check(token, pointJSON string) (*entity.Response, error) {
 	var cachedPoint image.Point
 	var checkedPoint image.Point
 
@@ -159,7 +161,7 @@ func (c *slideBlock) Check(token, pointJSON string) (*pkg.Response, error) {
 	if err = c.redisCli.Del(token); err != nil {
 		log.Printf("验证码缓存删除失败:%v", token)
 	}
-	return &pkg.Response{Status: status, Message: msg}, nil
+	return &entity.Response{Status: status, Message: msg}, nil
 }
 
 func (c *slideBlock) interfereBlock(img *image.RGBA, point image.Point, srcBlockName string) {

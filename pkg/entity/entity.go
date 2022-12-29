@@ -1,4 +1,4 @@
-package pkg
+package entity
 
 type Response struct {
 	Status  int       `json:"status"`
