@@ -5,10 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/entity"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/factory"
 	"image"
 	"image/color"
 	"image/png"
@@ -19,7 +15,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/entity"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/factory"
+
 	"github.com/disintegration/imaging"
+
 	image2 "github.com/yasin-wu/graphic_captcha/v2/internal/image"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/redis"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/util"

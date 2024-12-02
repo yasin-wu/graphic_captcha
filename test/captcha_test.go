@@ -3,11 +3,12 @@ package test
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
 
 	graphiccaptcha "github.com/yasin-wu/graphic_captcha/v2/captcha"
 	"github.com/yasin-wu/graphic_captcha/v2/internal/util"

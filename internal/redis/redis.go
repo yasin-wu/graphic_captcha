@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
 	"log"
 	"time"
+
+	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
 
 	"github.com/go-redis/redis/v8"
 )

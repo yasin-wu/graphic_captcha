@@ -2,6 +2,7 @@ package captcha
 
 import (
 	"errors"
+
 	"github.com/yasin-wu/graphic_captcha/v2/pkg/config"
 	"github.com/yasin-wu/graphic_captcha/v2/pkg/consts"
 	"github.com/yasin-wu/graphic_captcha/v2/pkg/factory"
