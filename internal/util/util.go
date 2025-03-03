@@ -11,7 +11,6 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"image/png"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -31,7 +30,7 @@ func IsFile(path string) bool {
 }
 
 func RandomFileName(dir string) (string, error) {
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return "", err
 	}
@@ -45,7 +44,7 @@ func RandomFileName(dir string) (string, error) {
 	if len(fileNames) == 0 {
 		return "", errors.New("dir is nil")
 	}
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 	index := rand.Intn(len(fileNames)) //nolint:gosec
 	if index >= len(fileNames) {
 		index = len(fileNames) - 1
@@ -69,7 +68,7 @@ func DrawText(img draw.Image, watermarkText, fontFile string, watermarkSize int,
 	watermarkLen := strings.Count(watermarkText, "") - 1
 	pt := image.Pt(img.Bounds().Dx()-(watermarkSize*watermarkLen), img.Bounds().Dy()-watermarkLen)
 	fontColor := color.RGBA{R: 255, G: 255, B: 255, A: 255}
-	fontBytes, err := ioutil.ReadFile(fontFile)
+	fontBytes, err := os.ReadFile(fontFile)
 	if err != nil {
 		return errors.New("read font file error:" + err.Error())
 	}

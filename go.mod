@@ -1,6 +1,8 @@
 module github.com/yasin-wu/graphic_captcha/v2
 
-go 1.18
+go 1.21
+
+toolchain go1.21.12
 
 require (
 	github.com/disintegration/imaging v1.6.2

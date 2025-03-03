@@ -8,7 +8,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"os"
@@ -195,7 +195,7 @@ func (c *clickWord) initWords() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	licenseByte, err := ioutil.ReadAll(license)
+	licenseByte, err := io.ReadAll(license)
 	if err != nil {
 		return "", err
 	}
@@ -216,7 +216,7 @@ func (c *clickWord) stringsContains(stringArray []string, substr string) bool {
 }
 
 func (c *clickWord) drawTextOnBackground(bg draw.Image, pt image.Point, text string) error {
-	fontBytes, err := ioutil.ReadFile(c.fontFile)
+	fontBytes, err := os.ReadFile(c.fontFile)
 	if err != nil {
 		return errors.New("read font file error:" + err.Error())
 	}
